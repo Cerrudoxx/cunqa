@@ -165,6 +165,7 @@ def _qc_to_json(qc : 'QuantumCircuit') -> dict:
                                                 "qubits":[quantum_registers[k][q] for k,q in zip(qreg, qubit)],
                                                 "params":instruction.params
                                                 })
+
             else:
                 clreg_name = [r._register.name for r in instruction.clbits]
                 clreg = []
