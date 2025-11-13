@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to CUNQA's documentation!
-=================================
+==================================
 
 **CUNQA** is a Python/C++ platform to simulate distributed quantum computing on the `CESGA HPC environment <https://cesga-docs.gitlab.io/index.html>`_.
 
