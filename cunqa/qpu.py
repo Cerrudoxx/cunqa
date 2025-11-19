@@ -73,40 +73,44 @@ from cunqa.logger import logger
 from cunqa.transpile import transpiler, TranspileError
 
 class QPU:
-    """
-    Class to represent a virtual QPU deployed for user interaction.
+    """Represents a virtual QPU deployed for user interaction.
 
-    This class contains the neccesary data for connecting to the virtual QPU's server in order to communicate circuits and results in both ways.
-    This communication is stablished trough the :py:attr:`QPU.qclient`.
+    This class contains the necessary data for connecting to the virtual QPU's
+    server to communicate circuits and results. This communication is
+    established through the `QPU.qclient`.
 
+    Attributes:
+        _id (int): The ID assigned to the object.
+        _qclient (QClient): The client for communicating with the server.
+        _backend (Backend): The backend characteristics of the QPU.
+        _name (str): The name of the QPU.
+        _family (str): The family to which the QPU belongs.
+        _endpoint (str): The server endpoint of the QPU.
+        _connected (bool): The connection status of the client.
     """
-    _id: int 
-    _qclient: 'QClient' 
+    _id: int
+    _qclient: 'QClient'
     _backend: 'Backend'
-    _name: str 
+    _name: str
     _family: str
-    _endpoint: str 
-    _connected: bool 
-    
-    def __init__(self, id: int, qclient: 'QClient', backend: Backend, name: str, family: str, endpoint: str):
-        """
-        Initializes the :py:class:`QPU` class.
+    _endpoint: str
+    _connected: bool
 
-        This initialization of the class is done by the :py:func:`~cunqa.qutils.get_QPUs` function, which loads the `id`,
-        `family` and `endpoint`, and instanciates the `qclient` and the `backend` objects.
+    def __init__(self, id: int, qclient: 'QClient', backend: Backend, name: str, family: str, endpoint: str):
+        """Initializes the QPU.
+
+        This is typically done by the `get_QPUs` function, which loads the
+        `id`, `family`, and `endpoint`, and instantiates the `qclient` and
+        `backend` objects.
 
         Args:
-            id (str): id string assigned to the object.
-
-            qclient (QClient): object that holds the information to communicate with the server endpoint of the corresponding virtual QPU.
-                
-            backend (~cunqa.backend.Backend): object that provides the characteristics that the simulator at the virtual QPU uses to emulate a real device.
-
-            family (str):  name of the family to which the corresponding virtual QPU belongs.
-            
-            endpoint (str): string refering to the endpoint of the corresponding virtual QPU.
+            id: The ID string assigned to the object.
+            qclient: The client for communicating with the server endpoint.
+            backend: The object providing the backend characteristics.
+            name: The name assigned to the QPU.
+            family: The name of the family to which the QPU belongs.
+            endpoint: The server endpoint of the QPU.
         """
-        
         self._id = id
         self._qclient = qclient
         self._backend = backend
@@ -114,53 +118,41 @@ class QPU:
         self._family = family
         self._endpoint = endpoint
         self._connected = False
-        
         logger.debug(f"Object for QPU {id} created correctly.")
 
     @property
     def id(self) -> int:
-        """Id string assigned to the object."""
+        """The ID string assigned to the object."""
         return self._id
     
     @property
     def name(self) -> str:
+        """The name of the QPU."""
         return self._name
     
     @property
     def backend(self) -> Backend:
-        """Object that provides the characteristics that the simulator at the virtual QPU uses to emulate a real device."""
+        """The backend characteristics of the QPU."""
         return self._backend
 
     def run(self, circuit: Union[dict, 'CunqaCircuit', 'QuantumCircuit'], transpile: bool = False, initial_layout: Optional["list[int]"] = None, opt_level: int = 1, **run_parameters: Any) -> 'QJob':
-        """
-        Class method to send a circuit to the corresponding virtual QPU.
+        """Sends a circuit to the corresponding virtual QPU.
 
-        It is important to note that  if `transpile` is set ``False``, we asume user has already done the transpilation, otherwise some errors during the simulation can occur.
-
-        Possible instructions to add as `**run_parameters` depend on the simulator, but mainly `shots` and `method` are used.
+        If `transpile` is set to `False`, it is assumed that the user has
+        already performed the transpilation.
 
         Args:
-            circuit (dict | qiskit.QuantumCircuit | ~cunqa.circuit.CunqaCircuit): circuit to be simulated at the virtual QPU.
+            circuit: The circuit to be simulated.
+            transpile: If `True`, transpilation will be performed with respect
+                to the backend. Defaults to `False`.
+            initial_layout: The initial mapping of virtual qubits to physical
+                qubits for transpilation.
+            opt_level: The optimization level for transpilation. Defaults to 1.
+            **run_parameters: Any other simulation instructions, such as `shots`
+                and `method`.
 
-            transpile (bool): if True, transpilation will be done with respect to the backend of the given QPU. Default is set to False.
-
-            initial_layout (list[int]): Initial position of virtual qubits on physical qubits for transpilation.
-
-            opt_level (int): optimization level for transpilation, default set to 1.
-
-            **run_parameters: any other simulation instructions.
-
-        Return:
-            A :py:class:`~cunqa.qjob.QJob` object related to the job sent.
-
-
-        .. warning::
-            If `transpile` is set ``False`` and transpilation instructions (`initial_layout`, `opt_level`) are provided, they will be ignored.
-        
-        .. note::
-            Transpilation is the process of translating circuit instructions into the native gates of the destined backend accordingly to the topology of its qubits.
-            If this is not done, the simulatior receives the instructions but associates no error, so simulation outcome will not be correct.
-
+        Returns:
+            A `QJob` object related to the submitted job.
         """
 
         # Disallow execution of distributed circuits

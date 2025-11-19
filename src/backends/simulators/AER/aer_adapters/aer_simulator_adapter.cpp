@@ -23,6 +23,10 @@
 #include "logger.hpp"
 
 namespace {
+/**
+ * @struct TaskState
+ * @brief Represents the state of a single quantum task.
+ */
 struct TaskState {
     std::string id;
     cunqa::JSON::const_iterator it, end;
@@ -33,6 +37,10 @@ struct TaskState {
     std::stack<int> telep_meas;
 };
 
+/**
+ * @struct GlobalState
+ * @brief Represents the global state of the simulation across all tasks.
+ */
 struct GlobalState {
     unsigned long n_qubits = 0, n_clbits = 0;
     std::map<std::size_t, bool> creg, rcreg;
@@ -46,6 +54,17 @@ struct GlobalState {
 namespace cunqa {
 namespace sim {
 
+/**
+ * @brief Executes a single shot of a quantum computation.
+ *
+ * This function simulates one shot of a set of quantum tasks, handling the
+ * interactions and dependencies between them.
+ *
+ * @param state A pointer to the AerState object representing the quantum state.
+ * @param quantum_tasks A vector of QuantumTask objects to be executed.
+ * @param classical_channel A pointer to a classical channel for communication.
+ * @return A string representing the measurement results of the shot.
+ */
 std::string execute_shot_(AER::AerState* state, const std::vector<QuantumTask>& quantum_tasks, comm::ClassicalChannel* classical_channel)
 {
     std::unordered_map<std::string, TaskState> Ts;
@@ -66,30 +85,23 @@ std::string execute_shot_(AER::AerState* state, const std::vector<QuantumTask>& 
         G.n_clbits += quantum_task.config.at("num_clbits").get<int>();
     }
     
-    // Here we add the two communication qubits
-    if (size(quantum_tasks) > 1)
+    if (quantum_tasks.size() > 1)
         G.n_qubits += 2;
 
     auto generate_entanglement_ = [&]() {
         state->apply_reset({G.n_qubits - 1});
         state->apply_reset({G.n_qubits - 2});
-        // Apply H to the first entanglement qubit
         state->apply_h(G.n_qubits - 2);
-
-        // Apply a CX to the second one to generate an ent pair
         state->apply_mcx({G.n_qubits - 2, G.n_qubits - 1});
     };
 
-
     std::function<void(TaskState&, const JSON&)> apply_next_instr = [&](TaskState& T, const JSON& instruction = {}) {
-
-        // This is added to be able to add instructions outside the main loop
         const JSON& inst = instruction.empty() ? *T.it : instruction;
 
         if (inst.contains("conditional_reg")) {
             auto v = inst.at("conditional_reg").get<std::vector<std::uint64_t>>();
             if (!G.creg[v[0]]) return;
-        } else if (inst.contains("remote_conditional_reg") && inst.at("name") != "recv") { // TODO: Cambiar el nombre para el recv y para el resto
+        } else if (inst.contains("remote_conditional_reg") && inst.at("name") != "recv") {
             auto v = inst.at("remote_conditional_reg").get<std::vector<std::uint64_t>>();
             if (!G.rcreg[v[0]]) return;
         }
@@ -103,26 +115,16 @@ std::string execute_shot_(AER::AerState* state, const std::vector<QuantumTask>& 
         {
             uint_t measurement = state->apply_measure({qubits[0] + T.zero_qubit});
             std::vector<int> clbits = inst.at("clbits").get<std::vector<int>>();
-            LOGGER_DEBUG("Measure is stored on register {} with value {}", clbits[0] + T.zero_qubit, measurement == 1);
+            LOGGER_DEBUG("Measurement stored in register {} with value {}", clbits[0] + T.zero_qubit, measurement == 1);
             G.cvalues[clbits[0] + T.zero_qubit] = (measurement == 1);
             G.creg[clbits[0]] = (measurement == 1);
             break;
         }
-        case constants::X:
-            state->apply_mcx({qubits[0] + T.zero_qubit});
-            break;
-        case constants::Y:
-            state->apply_mcy({qubits[0] + T.zero_qubit});
-            break;
-        case constants::Z:
-            state->apply_mcz({qubits[0] + T.zero_qubit});
-            break;
-        case constants::H:
-            state->apply_h(qubits[0] + T.zero_qubit);
-            break;
-        case constants::SX:
-            state->apply_mcsx({qubits[0] + T.zero_qubit});
-            break;
+        case constants::X: state->apply_mcx({qubits[0] + T.zero_qubit}); break;
+        case constants::Y: state->apply_mcy({qubits[0] + T.zero_qubit}); break;
+        case constants::Z: state->apply_mcz({qubits[0] + T.zero_qubit}); break;
+        case constants::H: state->apply_h(qubits[0] + T.zero_qubit); break;
+        case constants::SX: state->apply_mcsx({qubits[0] + T.zero_qubit}); break;
         case constants::CX:
         {
             unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
@@ -141,9 +143,7 @@ std::string execute_shot_(AER::AerState* state, const std::vector<QuantumTask>& 
             state->apply_mcz({control, qubits[1] + T.zero_qubit});
             break;
         }
-        case constants::ECR:
-            // TODO
-            break;
+        case constants::ECR: break;
         case constants::RX:
         {
             auto params = inst.at("params").get<std::vector<double>>();
@@ -183,18 +183,9 @@ std::string execute_shot_(AER::AerState* state, const std::vector<QuantumTask>& 
             state->apply_mcrz({control, qubits[1] + T.zero_qubit}, params[0]);
             break;
         }
-        case constants::C_IF_H:
-        case constants::C_IF_X:
-        case constants::C_IF_Y:
-        case constants::C_IF_Z:
-        case constants::C_IF_CX:
-        case constants::C_IF_CY:
-        case constants::C_IF_CZ:
-        case constants::C_IF_ECR:
-        case constants::C_IF_RX:
-        case constants::C_IF_RY:
-        case constants::C_IF_RZ:
-            // Managed by use
+        case constants::C_IF_H: case constants::C_IF_X: case constants::C_IF_Y: case constants::C_IF_Z:
+        case constants::C_IF_CX: case constants::C_IF_CY: case constants::C_IF_CZ: case constants::C_IF_ECR:
+        case constants::C_IF_RX: case constants::C_IF_RY: case constants::C_IF_RZ:
             break;
         case constants::SWAP:
         {
@@ -205,8 +196,7 @@ std::string execute_shot_(AER::AerState* state, const std::vector<QuantumTask>& 
         {
             auto endpoint = inst.at("qpus").get<std::vector<std::string>>();
             uint_t measurement = state->apply_measure({qubits[0] + T.zero_qubit});
-            int measurement_as_int = static_cast<int>(measurement);
-            classical_channel->send_measure(measurement_as_int, endpoint[0]); 
+            classical_channel->send_measure(static_cast<int>(measurement), endpoint[0]);
             break;
         }
         case cunqa::constants::RECV:
@@ -219,24 +209,14 @@ std::string execute_shot_(AER::AerState* state, const std::vector<QuantumTask>& 
         }
         case constants::QSEND:
         {
-            //------------- Generate Entanglement ---------------
             state->apply_h(G.n_qubits - 2);
             state->apply_mcx({G.n_qubits - 2, G.n_qubits - 1});
-            //----------------------------------------------------
-
-            // CX to the entangled pair
             state->apply_mcx({qubits[0] + T.zero_qubit, G.n_qubits - 2});
-
-            // H to the sent qubit
             state->apply_h(qubits[0] + T.zero_qubit);
-
             uint_t result = state->apply_measure({qubits[0] + T.zero_qubit});
-
             G.qc_meas[T.id].push(result);
             G.qc_meas[T.id].push(state->apply_measure({G.n_qubits - 2}));
             state->apply_reset({G.n_qubits - 2, qubits[0] + T.zero_qubit});
-
-            // Unlock QRECV
             Ts[inst.at("qpus")[0]].blocked = false;
             break;
         }
@@ -246,22 +226,12 @@ std::string execute_shot_(AER::AerState* state, const std::vector<QuantumTask>& 
                 T.blocked = true;
                 return;
             }
-
-            // Receive the measurements from the sender
             std::size_t meas1 = G.qc_meas[inst.at("qpus")[0]].top();
             G.qc_meas[inst.at("qpus")[0]].pop();
             std::size_t meas2 = G.qc_meas[inst.at("qpus")[0]].top();
             G.qc_meas[inst.at("qpus")[0]].pop();
-
-            // Apply, conditioned to the measurement, the X and Z gates
-            if (meas1) {
-                state->apply_mcx({G.n_qubits - 1});
-            }
-            if (meas2) {
-                state->apply_mcz({G.n_qubits - 1});
-            }
-
-            // Swap the value to the desired qubit
+            if (meas1) state->apply_mcx({G.n_qubits - 1});
+            if (meas2) state->apply_mcz({G.n_qubits - 1});
             state->apply_mcswap({G.n_qubits - 1, qubits[0] + T.zero_qubit});
             state->apply_reset({G.n_qubits - 1});
             break;
@@ -270,12 +240,8 @@ std::string execute_shot_(AER::AerState* state, const std::vector<QuantumTask>& 
         {
             if (!T.cat_entangled) {
                 generate_entanglement_();
-
-                // CX to the entangled pair
                 state->apply_mcx({qubits[0] + T.zero_qubit, G.n_qubits - 2});
-
                 uint_t result = state->apply_measure({G.n_qubits - 2});
-
                 G.qc_meas[T.id].push(result);
                 T.cat_entangled = true;
                 T.blocked = true;
@@ -284,11 +250,7 @@ std::string execute_shot_(AER::AerState* state, const std::vector<QuantumTask>& 
             } else {
                 uint_t meas = G.qc_meas[inst.at("qpus")[0]].top();
                 G.qc_meas[inst.at("qpus")[0]].pop();
-
-                if (meas) {
-                    state->apply_mcz({qubits[0] + T.zero_qubit}); 
-                }
-
+                if (meas) state->apply_mcz({qubits[0] + T.zero_qubit});
                 T.cat_entangled = false;
             }
             break;
@@ -299,52 +261,36 @@ std::string execute_shot_(AER::AerState* state, const std::vector<QuantumTask>& 
                 T.blocked = true;
                 return;
             }
-
             uint_t meas2 = G.qc_meas[inst.at("qpus")[0]].top();
             G.qc_meas[inst.at("qpus")[0]].pop();
-
-            if (meas2) {
-                state->apply_mcx({G.n_qubits - 1});
-            }
-
-            for(const auto& sub_inst: inst.at("instructions")) {
+            if (meas2) state->apply_mcx({G.n_qubits - 1});
+            for (const auto& sub_inst : inst.at("instructions")) {
                 apply_next_instr(T, sub_inst);
             }
-
             state->apply_h(G.n_qubits - 1);
-
             uint_t result = state->apply_measure({G.n_qubits - 1});
             G.qc_meas[T.id].push(result);
-
             Ts[inst.at("qpus")[0]].blocked = false;
-            size_t erased_elements = G.qc_meas.erase(inst.at("qpus")[0]); 
+            G.qc_meas.erase(inst.at("qpus")[0]);
             break;
         }
         default:
-            std::cerr << "Instruction not suported!" << "\n" << "Instruction that failed: " << inst.dump(4) << "\n";
-        } // End switch
+            std::cerr << "Instruction not supported!\n" << "Instruction that failed: " << inst.dump(4) << "\n";
+        }
     };
 
     while (!G.ended)
     {
         G.ended = true;
-        for (auto& [id, T]: Ts)
+        for (auto& [id, T] : Ts)
         {
-            if (T.finished || T.blocked)
-                continue;
-
+            if (T.finished || T.blocked) continue;
             apply_next_instr(T, {});
-
-            if (!T.blocked)
-                ++T.it;
-
-            if (T.it != T.end)
-                G.ended = false;
-            else
-                T.finished = true;
+            if (!T.blocked) ++T.it;
+            if (T.it != T.end) G.ended = false;
+            else T.finished = true;
         }
-
-    } // End one shot
+    }
 
     std::string result_bits(G.n_clbits, '0');
     for (const auto &[bitIndex, value] : G.cvalues)
@@ -355,20 +301,24 @@ std::string execute_shot_(AER::AerState* state, const std::vector<QuantumTask>& 
     return result_bits;
 }
 
-
+/**
+ * @brief Simulates a quantum computation using a specific backend.
+ *
+ * This method simulates a quantum computation defined in the AerComputationAdapter
+ * using the provided backend. It handles the conversion of the quantum task to
+ * a format compatible with the Aer simulator, executes the simulation, and
+ * formats the results.
+ *
+ * @param backend A pointer to the backend to be used for the simulation.
+ * @return The results of the simulation as a JSON object.
+ */
 JSON AerSimulatorAdapter::simulate(const Backend* backend)
 {
     try {
-
-        /* int result = std::system("python /mnt/netapp1/Store_CESGA/home/cesga/acarballido/repos/api-simulator/examples/aer_bench.py"); */
-
         auto quantum_task = qc.quantum_tasks[0];
-
         auto aer_quantum_task = quantum_task_to_AER(quantum_task);
         int n_clbits = quantum_task.config.at("num_clbits");
         JSON circuit_json = aer_quantum_task.circuit;
-
-        //LOGGER_DEBUG("Circuit: {}", circuit_json.dump());
 
         Circuit circuit(circuit_json);
         std::vector<std::shared_ptr<Circuit>> circuits;
@@ -378,12 +328,10 @@ JSON AerSimulatorAdapter::simulate(const Backend* backend)
         run_config_json["seed_simulator"] = quantum_task.config.at("seed");
         Config aer_config(run_config_json);
 
-        LOGGER_DEBUG("Circiut: {}", circuit_json.dump());
+        LOGGER_DEBUG("Circuit: {}", circuit_json.dump());
 
         Noise::NoiseModel noise_model(backend->config.at("noise_model"));
-
         Result result = controller_execute<Controller>(circuits, noise_model, aer_config);
-
         JSON result_json = result.to_json();
 
         LOGGER_DEBUG("Result: {}", result_json.dump());
@@ -393,14 +341,22 @@ JSON AerSimulatorAdapter::simulate(const Backend* backend)
         return result_json;
 
     } catch (const std::exception& e) {
-        // TODO: specify the circuit format in the docs.
-        LOGGER_ERROR("Error executing the circuit in the AER simulator.\n\tTry checking the format of the circuit sent and/or of the noise model.");
+        LOGGER_ERROR("Error executing the circuit in the AER simulator.\n\tCheck the format of the circuit and/or noise model.");
         return {{"ERROR", std::string(e.what())}};
     }
     return {};
 }
 
-
+/**
+ * @brief Simulates a quantum computation, optionally using a classical channel.
+ *
+ * This method simulates a quantum computation defined in the AerComputationAdapter.
+ * It can be used for distributed simulations by providing a classical channel for
+ * communication between different parts of the computation.
+ *
+ * @param classical_channel A pointer to a classical channel for communication.
+ * @return The results of the simulation as a JSON object.
+ */
 JSON AerSimulatorAdapter::simulate(comm::ClassicalChannel* classical_channel)
 {
     std::map<std::string, std::size_t> meas_counter;
@@ -420,18 +376,17 @@ JSON AerSimulatorAdapter::simulate(comm::ClassicalChannel* classical_channel)
     {
         n_qubits += quantum_task.config.at("num_qubits").get<unsigned long>();
     }
-    if (size(qc.quantum_tasks) > 1)
+    if (qc.quantum_tasks.size() > 1)
         n_qubits += 2;
 
-    reg_t qubit_ids;
     auto start = std::chrono::high_resolution_clock::now();
     for (std::size_t i = 0; i < shots; i++)
     {
-        qubit_ids = state->allocate_qubits(n_qubits);
+        state->allocate_qubits(n_qubits);
         state->initialize();
         meas_counter[execute_shot_(state, qc.quantum_tasks, classical_channel)]++;
         state->clear();
-    } // End all shots
+    }
     
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> duration = end - start;
@@ -445,8 +400,6 @@ JSON AerSimulatorAdapter::simulate(comm::ClassicalChannel* classical_channel)
         {"time_taken", time_taken}};
     return result_json;
 }
-
-
 
 } // End of sim namespace
 } // End of cunqa namespace

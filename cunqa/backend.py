@@ -11,40 +11,53 @@
 from typing import  TypedDict
 
 class BackendData(TypedDict):
+    """A TypedDict to gather the characteristics of a Backend object.
+
+    Attributes:
+        basis_gates: Native gates that the Backend accepts. If other gates are
+            used, they must be translated into the native gates.
+        coupling_map: Defines the physical connectivity of the qubits,
+            specifying in which pairs two-qubit gates can be performed.
+        custom_instructions: Any custom instructions that the Backend has
+            defined.
+        description: A description of the Backend itself.
+        gates: A list of specific gates supported by the Backend.
+        n_qubits: The number of qubits that form the Backend, which
+            determines the maximal number of qubits supported for a quantum
+            circuit.
+        name: The name assigned to the Backend.
+        noise_path: The path to the noise model JSON file, which contains
+            the noise instructions needed for the simulator.
+        simulator: The name of the simulator that simulates the circuits
+            according to the Backend's characteristics.
+        version: The version of the Backend.
     """
-        Class to gather the characteristics of a :py:class:`~cunqa.backend.Backend` object.
-    """
-    basis_gates: "list[str]" #: Native gates that the Backend accepts. If other are used, they must be translated into the native gates.
-    coupling_map: "list[list[int]]" #: Defines the physical connectivity of the qubits, in which pairs two-qubit gates can be performed.
-    custom_instructions: str #: Any custom instructions that the Backend has defined.
-    description: str #: Description of the Backend itself.
-    gates: "list[str]" #: Specific gates supported.
-    n_qubits: int #: Number of qubits that form the Backend, which determines the maximal number of qubits supported for a quantum circuit.
-    name: str #: Name assigned to the Backend.
-    noise_path: str #: Path to the noise model json file gathering the noise instructions needed for the simulator.
-    simulator: str #: Name of the simulatior that simulates the circuits accordingly to the Backend.
-    version: str #: Version of the Backend.
+    basis_gates: "list[str]"
+    coupling_map: "list[list[int]]"
+    custom_instructions: str
+    description: str
+    gates: "list[str]"
+    n_qubits: int
+    name: str
+    noise_path: str
+    simulator: str
+    version: str
 
 
-class Backend():
-    """
-        Class to define backend information of a virtual QPU.
-    """
+class Backend:
+    """Defines the backend information of a virtual QPU."""
     def __init__(self, backend_dict: BackendData):
-        """
-        Class constructor.
+        """Initializes the Backend object.
 
         Args:
-            backend_dict (BackendData): object that contains all the needed information about the backend.
+            backend_dict: A dictionary containing all the necessary
+                information about the backend.
         """
         for key, value in backend_dict.items():
             setattr(self, key, value)
 
-    #TODO: make @property?; add more methods as is_ideal, incorporate noisemodel object ot leave for transpilation only?
     def info(self) -> None:
-        """
-        Prints a dictionary with the backend configuration.
-        """
-        print(f"""--- Backend configuration ---""")
+        """Prints a dictionary with the backend configuration."""
+        print("--- Backend configuration ---")
         for attribute_name, attribute_value in self.__dict__.items():
             print(f"{attribute_name}: {attribute_value}")

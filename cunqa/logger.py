@@ -1,19 +1,22 @@
 import logging
 import sys
 
-# Códigos de colores ANSI
-RESET = "\033[0m"              # Restablece el color al predeterminado
-RED = "\033[31m"                # Rojo para ERROR
-YELLOW = "\033[33m"             # Amarillo para WARNING
-BLUE = "\033[34m"               # Azul para DEBUG
-GREEN = "\033[32m"              # Verde para INFO
-BRIGHT_RED = "\033[31m\033[1m"  # Rojo brillante para CRITICAL
+# ANSI color codes
+RESET = "\033[0m"       # Reset color to default
+RED = "\033[31m"        # Red for ERROR
+YELLOW = "\033[33m"     # Yellow for WARNING
+BLUE = "\033[34m"       # Blue for DEBUG
+GREEN = "\033[32m"      # Green for INFO
+BRIGHT_RED = "\033[31m\033[1m" # Bright red for CRITICAL
 
 class ColoredFormatter(logging.Formatter):
-    """Formatter que añade colores, convierte niveles a minúsculas y añade
-    ruta completa del archivo y línea para errores."""
+    """A logging formatter that adds colors, converts levels to lowercase, and
+    includes the full file path and line number for errors.
 
-    # Mapeo de niveles a colores
+    Attributes:
+        LEVEL_COLOR (dict): A mapping of logging levels to ANSI color codes.
+    """
+
     LEVEL_COLOR = {
         logging.DEBUG: BLUE,
         logging.INFO: GREEN,
@@ -23,6 +26,14 @@ class ColoredFormatter(logging.Formatter):
     }
 
     def format(self, record):
+        """Formats the log record with colors and additional information.
+
+        Args:
+            record (logging.LogRecord): The log record to format.
+
+        Returns:
+            str: The formatted log message.
+        """
         color = self.LEVEL_COLOR.get(record.levelno, RESET)
         levelname_lower = record.levelname.lower()
 
@@ -43,8 +54,8 @@ class ColoredFormatter(logging.Formatter):
 
         return message
 
-logger = logging.getLogger('mi_logger_coloreado')
-logger.setLevel(logging.WARN)  # Establece el nivel mínimo de log
+logger = logging.getLogger('colored_logger')
+logger.setLevel(logging.WARN)
 logger.propagate = False
 logger.handlers.clear()
 

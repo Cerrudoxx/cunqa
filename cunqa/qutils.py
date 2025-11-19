@@ -90,63 +90,60 @@ from cunqa.qpu import QPU
 from cunqa.constants import QPUS_FILEPATH
 
 class QRaiseError(Exception):
-    """Exception for errors during qraise slurm command."""
+    """Exception for errors that occur during the qraise Slurm command."""
     pass
                
-               
-def qraise(n, t, *, 
-           classical_comm = False, 
-           quantum_comm = False,  
-           simulator = None, 
-           backend = None, 
-           fakeqmio = False, 
-           family = None, 
-           co_located = True, 
-           cores = None, 
-           mem_per_qpu = None, 
-           n_nodes = None, 
-           node_list = None, 
-           qpus_per_node= None) -> Union[tuple, str]:
-    """
-    Raises virtual QPUs and returns the job id associated to its SLURM job.
+def qraise(n, t, *,
+           classical_comm=False,
+           quantum_comm=False,
+           simulator=None,
+           backend=None,
+           fakeqmio=False,
+           family=None,
+           co_located=True,
+           cores=None,
+           mem_per_qpu=None,
+           n_nodes=None,
+           node_list=None,
+           qpus_per_node=None) -> Union[tuple, str]:
+    """Raises virtual QPUs and returns the job ID associated with the Slurm job.
 
-    This function allows to raise QPUs from the python API, what can also be done at terminal by ``qraise`` command.
+    This function allows QPUs to be raised from the Python API, similar to the
+    `qraise` command-line tool.
 
     Args:
-        n (int): number of virtual QPUs to be raised in the job.
-
-        t (str): maximun time that the classical resources will be reserved for the job. Format: 'D-HH:MM:SS'.
-
-        classical_comm (bool): if ``True``, virtual QPUs will allow classical communications.
-
-        quantum_comm (bool): if ``True``, virtual QPUs will allow quantum communications.
-
-        simulator (str): name of the desired simulator to use. Default is `Aer <https://github.com/Qiskit/qiskit-aer>`_.
-
-        backend (str): path to a file containing backend information.
-
-        fakeqmio (bool): ``True`` for raising `n` virtual QPUs with FakeQmio backend.
-
-        family (str): name to identify the group of virtual QPUs raised.
-
-        co_located (bool): if ``True``, `co-located` mode is set, otherwise `hpc` mode is set. In `hpc` mode, virtual QPUs can only be accessed from the node in which they are deployed. In `co-located` mode, they can be accessed from other nodes.
-
-        cores (str):  number of cores per virtual QPU, the total for the SLURM job will be `n*cores`.
-
-        mem_per_qpu (str): memory to allocate for each virtual QPU in GB, format to use is  "xG".
-
-        n_nodes (str): number of nodes for the SLURM job.
-
-        node_list (str): list of nodes in which the virtual QPUs will be deployed.
-
-        qpus_per_node (str): sets the number of virtual QPUs deployed on each node.
+        n (int): The number of virtual QPUs to be raised in the job.
+        t (str): The maximum time that classical resources will be reserved
+            for the job. The format is 'D-HH:MM:SS'.
+        classical_comm (bool): If `True`, the virtual QPUs will allow
+            classical communications.
+        quantum_comm (bool): If `True`, the virtual QPUs will allow quantum
+            communications.
+        simulator (str, optional): The name of the desired simulator to use.
+            Defaults to Aer.
+        backend (str, optional): The path to a file containing backend
+            information.
+        fakeqmio (bool): If `True`, `n` virtual QPUs with the FakeQmio backend
+            will be raised.
+        family (str, optional): A name to identify the group of virtual QPUs
+            being raised.
+        co_located (bool): If `True`, co-located mode is set; otherwise, HPC
+            mode is set.
+        cores (str, optional): The number of cores per virtual QPU.
+        mem_per_qpu (str, optional): The memory to allocate for each virtual
+            QPU in GB (e.g., "4G").
+        n_nodes (str, optional): The number of nodes for the Slurm job.
+        node_list (str, optional): A list of nodes on which the virtual QPUs
+            will be deployed.
+        qpus_per_node (str, optional): The number of virtual QPUs to be
+            deployed on each node.
     
     Returns:
-        The SLURM job id of the job deployed. If `family` was provided, a tuple (`family`, `job id`).
+        The Slurm job ID of the deployed job. If `family` was provided, a
+        tuple of (`family`, `job_id`) is returned.
 
-    .. warning::
-        The :py:func:`qraise` function can only be used when the python program is being run at a login node, otherwise an error will be raised.
-        This is because SLURM jobs can only be submmited from login nodes, but not from compute sessions or running jobs.
+    Raises:
+        QRaiseError: If an error occurs while raising the QPUs.
     """
     logger.debug("Setting up the requested QPUs...")
 
@@ -224,175 +221,141 @@ def qraise(n, t, *,
     except Exception as error:
         raise QRaiseError(f"Unable to raise requested QPUs [{error}].")
 
-def qdrop(*families: Union[tuple[str], str]):
-    """
-    Drops the virtual QPU families corresponding to the the input family names.
-    If no families are provided, all virtual QPUs deployed by the user will be dropped.
+def qdrop(*families: Union[tuple, str]):
+    """Drops the virtual QPU families corresponding to the input family names.
+
+    If no families are provided, all virtual QPUs deployed by the user will be
+    dropped.
 
     Args:
-        families (str): family names of the groups of virtual QPUs to be dropped.
+        *families: The family names of the groups of virtual QPUs to be
+            dropped.
     """
-    
-    # Building the terminal command to drop the specified families
     cmd = ['qdrop']
-
-    # If no QPU is provided we drop all QPU slurm jobs
-    if len( families ) == 0:
-        cmd.append('--all') 
+    if not families:
+        cmd.append('--all')
     else:
         for family in families:
             if isinstance(family, str):
                 cmd.append(family)
-
             elif isinstance(family, tuple):
                 cmd.append(family[1])
             else:
-                logger.error(f"Invalid type for qdrop.")
+                logger.error("Invalid type provided for qdrop.")
                 raise SystemExit
-    
- 
-    run(cmd) #run 'qdrop slurm_jobid_1 slurm_jobid_2 etc' on terminal
+    run(cmd)
 
 def nodes_with_QPUs() -> "list[str]":
-    """
-    Provides information about the nodes in which virtual QPUs are available.
-
-    Return:
-        List of the corresponding node names.
-    """
-    try:
-        with open(QPUS_FILEPATH, "r") as f:
-            qpus_json = load(f)
-
-        node_names = set()
-        for info in qpus_json.values():
-            node_names.add(info["net"]["node_name"])
-
-        return list(node_names)
-
-    except Exception as error:
-        logger.error(f"Some exception occurred [{type(error).__name__}].")
-        raise SystemExit # User's level
-
-def info_QPUs(on_node: bool = True, node_name: Optional[str] = None) -> "list[dict]":
-    """
-    Provides information about the virtual QPUs available either in the local node, an specific node or globally.
-
-    If `on_node` is ``True`` and `node_name` provided is different from the local node, only information at local node will be displayed.
-    
-    Args:
-        on_node (bool): if ``True`` information at local node is displayed, else all information is displayed.
-
-        node_name (str): filters the displayed information by an specific node.
+    """Provides information about the nodes where virtual QPUs are available.
 
     Returns:
-        A list with :py:class:`dict` objects that display the information of the virtual QPUs.
-    
+        A list of the corresponding node names.
     """
-
     try:
         with open(QPUS_FILEPATH, "r") as f:
             qpus_json = load(f)
-            if len(qpus_json) == 0:
-                logger.warning(f"No QPUs were found.")
-                return [{}]
+        return list({info["net"]["node_name"] for info in qpus_json.values()})
+    except Exception as error:
+        logger.error(f"An exception occurred: [{type(error).__name__}].")
+        raise SystemExit
+
+def info_QPUs(on_node: bool = True, node_name: Optional[str] = None) -> "list[dict]":
+    """Provides information about the virtual QPUs available.
+
+    Args:
+        on_node (bool): If `True`, information is shown for the local node.
+        node_name (str, optional): Filters the information by a specific node.
+
+    Returns:
+        A list of dictionaries containing information about the virtual QPUs.
+    """
+    try:
+        with open(QPUS_FILEPATH, "r") as f:
+            qpus_json = load(f)
+        if not qpus_json:
+            logger.warning("No QPUs were found.")
+            return [{}]
         
-        if node_name is not None:
-            targets = [{qpu_id:info} for qpu_id,info in qpus_json.items() if (info["net"].get("node_name") == node_name ) ]
-        
+        if node_name:
+            targets = [{k: v} for k, v in qpus_json.items() if v["net"].get("node_name") == node_name]
+        elif on_node:
+            local_node = os.getenv("SLURMD_NODENAME")
+            logger.debug(f"User is at {'node ' + local_node if local_node else 'a login node'}.")
+            targets = [{k: v} for k, v in qpus_json.items() if v["net"].get("node_name") == local_node]
         else:
-            if on_node:
-                local_node = os.getenv("SLURMD_NODENAME")
-                if local_node != None:
-                    logger.debug(f"User at node {local_node}.")
-                else:
-                    logger.debug(f"User at a login node.")
-                targets = [{qpu_id:info} for qpu_id,info in qpus_json.items() if (info["net"].get("node_name")==local_node) ]
-            else:
-                targets =[{qpu_id:info} for qpu_id,info in qpus_json.items()]
+            targets = [{k: v} for k, v in qpus_json.items()]
         
         info = []
         for t in targets:
             key = list(t.keys())[0]
             info.append({
-                "QPU":key,
-                "node":t[key]["net"]["node_name"],
-                "family":t[key]["family"],
-                "backend":{
-                    "name":t[key]["backend"]["name"],
-                    "simulator":t[key]["backend"]["simulator"],
-                    "version":t[key]["backend"]["version"],
-                    "description":t[key]["backend"]["description"],
-                    "n_qubits":t[key]["backend"]["n_qubits"],
-                    "basis_gates":t[key]["backend"]["basis_gates"],
-                    "coupling_map":t[key]["backend"]["coupling_map"],
-                    "custom_instructiona":t[key]["backend"]["custom_instructions"]
+                "QPU": key,
+                "node": t[key]["net"]["node_name"],
+                "family": t[key]["family"],
+                "backend": {
+                    "name": t[key]["backend"]["name"],
+                    "simulator": t[key]["backend"]["simulator"],
+                    "version": t[key]["backend"]["version"],
+                    "description": t[key]["backend"]["description"],
+                    "n_qubits": t[key]["backend"]["n_qubits"],
+                    "basis_gates": t[key]["backend"]["basis_gates"],
+                    "coupling_map": t[key]["backend"]["coupling_map"],
+                    "custom_instructions": t[key]["backend"]["custom_instructions"]
                 }
             })
         return info
-
     except Exception as error:
-        logger.error(f"Some exception occurred [{type(error).__name__}].")
-        raise error # User's level
+        logger.error(f"An exception occurred: [{type(error).__name__}].")
+        raise
 
 def get_QPUs(on_node: bool = True, family: Optional[Union[tuple, str]] = None) -> "list['QPU']":
-    """
-    Returns :py:class:`~cunqa.qpu.QPU` objects corresponding to the virtual QPUs raised by the user.
+    """Returns `QPU` objects corresponding to the virtual QPUs raised by the user.
 
     Args:
-        on_node (bool): if ``True``, filters by the virtual QPUs available at the local node.
-        family (str): filters virtual QPUs by their family name.
+        on_node (bool): If `True`, filters by the virtual QPUs available on the
+            local node.
+        family (str or tuple, optional): Filters virtual QPUs by their family
+            name.
 
-    Return:
-        List of :py:class:`~cunqa.qpu.QPU` objects.
-    
+    Returns:
+        A list of `QPU` objects.
     """
+    if isinstance(family, tuple):
+        family = family[0]
 
-    if isinstance(family, tuple): family = family[0]
-
-    # access raised QPUs information on qpu.json file
     try:
         with open(QPUS_FILEPATH, "r") as f:
             qpus_json = load(f)
-            if len(qpus_json) == 0:
-                logger.error(f"No QPUs were found.")
-                raise SystemExit
-
+        if not qpus_json:
+            logger.error("No QPUs were found.")
+            raise SystemExit
     except Exception as error:
-        logger.error(f"Some exception occurred [{type(error).__name__}].")
-        raise SystemExit # User's level
+        logger.error(f"An exception occurred: [{type(error).__name__}].")
+        raise SystemExit
     
-    logger.debug(f"File accessed correctly.")
+    logger.debug("File accessed correctly.")
 
-    # extract selected QPUs from qpu.json information 
     local_node = os.getenv("SLURMD_NODENAME")
-    if local_node != None:
-        logger.debug(f"User at node {local_node}.")
-    else:
-        logger.debug(f"User at a login node.")
+    logger.debug(f"User is at {'node ' + local_node if local_node else 'a login node'}.")
+
     if on_node:
-        if family is not None:
-            targets = {qpu_id:info for qpu_id, info in qpus_json.items() if (info["net"].get("node_name") == local_node) and (info.get("family") == family)}
+        if family:
+            targets = {k: v for k, v in qpus_json.items() if v["net"].get("node_name") == local_node and v.get("family") == family}
         else:
-            targets = {qpu_id:info for qpu_id, info in qpus_json.items() if (info["net"].get("node_name") == local_node)}
+            targets = {k: v for k, v in qpus_json.items() if v["net"].get("node_name") == local_node}
     else:
-        if family is not None:
-            targets = {qpu_id:info for qpu_id, info in qpus_json.items() if ((info["net"].get("node_name") == local_node) or (info["net"].get("nodename") != local_node and info["net"].get("mode") == "co_located")) and (info.get("family") == family)}
+        if family:
+            targets = {k: v for k, v in qpus_json.items() if (v["net"].get("node_name") == local_node or v["net"].get("mode") == "co_located") and v.get("family") == family}
         else:
-            targets = {qpu_id:info for qpu_id, info in qpus_json.items() if (info["net"].get("node_name") == local_node) or (info["net"].get("nodename") != local_node and info["net"].get("mode") == "co_located")}
+            targets = {k: v for k, v in qpus_json.items() if v["net"].get("node_name") == local_node or v["net"].get("mode") == "co_located"}
     
-    # create QPU objects from the dictionary information + return them on a list
-    qpus = []
-    for id, info in targets.items():
-        client = QClient()
-        endpoint = info["net"]["endpoint"]
-        name = info["name"]
-        qpus.append(QPU(id = id, qclient = client, backend = Backend(info['backend']), name = name, family = info["family"], endpoint = endpoint))
-    if len(qpus) != 0:
+    qpus = [QPU(id=id, qclient=QClient(), backend=Backend(info['backend']), name=info["name"], family=info["family"], endpoint=info["net"]["endpoint"]) for id, info in targets.items()]
+
+    if qpus:
         logger.debug(f"{len(qpus)} QPU objects were created.")
         return qpus
     else:
-        logger.error(f"No QPUs where found with the characteristics provided: on_node={on_node}, family_name={family}.")
+        logger.error(f"No QPUs were found with the specified characteristics: on_node={on_node}, family_name={family}.")
         raise SystemExit
 
 
