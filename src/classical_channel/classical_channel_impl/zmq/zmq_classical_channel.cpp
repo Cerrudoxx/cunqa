@@ -15,6 +15,14 @@
 namespace cunqa {
 namespace comm {
 
+/**
+ * @struct ClassicalChannel::Impl
+ * @brief Implementation of the ClassicalChannel class using ZeroMQ.
+ *
+ * This struct contains the private members and methods for the ZeroMQ-based
+ * implementation of the classical channel. It manages the ZeroMQ context,
+ * sockets, and message queues.
+ */
 struct ClassicalChannel::Impl
 {
     std::string zmq_endpoint;
@@ -25,31 +33,40 @@ struct ClassicalChannel::Impl
     zmq::socket_t zmq_comm_server;
     std::unordered_map<std::string, std::queue<std::string>> message_queue;
 
+    /**
+     * @brief Constructs a new Impl object.
+     * @param id The identifier for the channel.
+     */
     Impl(const std::string& id)
     {
-        //Endpoint part
         auto IP = get_IP_address();
         zmq_endpoint = "tcp://" + IP + ":*";
 
-        //Server part
         zmq::socket_t qpu_server_socket_(zmq_context, zmq::socket_type::router);
         qpu_server_socket_.bind(zmq_endpoint);
         
-        char endpoint[256];
-        size_t sz = sizeof(endpoint);
-        zmq_getsockopt(qpu_server_socket_, ZMQ_LAST_ENDPOINT, endpoint, &sz);
-        zmq_endpoint = std::string(endpoint);
-        zmq_id = id == "" ? zmq_endpoint : id;
+        char endpoint_buf[256];
+        size_t sz = sizeof(endpoint_buf);
+        zmq_getsockopt(qpu_server_socket_, ZMQ_LAST_ENDPOINT, endpoint_buf, &sz);
+        zmq_endpoint = std::string(endpoint_buf);
+        zmq_id = id.empty() ? zmq_endpoint : id;
 
         zmq_comm_server = std::move(qpu_server_socket_);
     }
 
+    /**
+     * @brief Default destructor for the Impl object.
+     */
     ~Impl() = default;
 
-
+    /**
+     * @brief Connects to another endpoint.
+     * @param endpoint The endpoint to connect to.
+     * @param id An optional identifier for the connection.
+     */
     void connect(const std::string& endpoint, const std::string& id = "")
     {   
-        auto client_id = id == "" ? endpoint : id; 
+        auto client_id = id.empty() ? endpoint : id;
         if (zmq_sockets.find(client_id) == zmq_sockets.end()) {
             zmq::socket_t tmp_client_socket(zmq_context, zmq::socket_type::dealer);
             tmp_client_socket.setsockopt(ZMQ_IDENTITY, zmq_id.c_str(), zmq_id.size());
@@ -58,6 +75,11 @@ struct ClassicalChannel::Impl
         }
     }
 
+    /**
+     * @brief Connects to another endpoint, with an option to force the endpoint.
+     * @param endpoint The endpoint to connect to.
+     * @param force_endpoint A boolean indicating whether to force the endpoint.
+     */
     void connect(const std::string& endpoint, const bool force_endpoint)
     {   
         if (zmq_sockets.find(endpoint) == zmq_sockets.end()) {
@@ -69,19 +91,28 @@ struct ClassicalChannel::Impl
         }
     }
 
-    void send(const std::string& data, const std::string& target) 
+    /**
+     * @brief Sends data to a target.
+     * @param data The data to send.
+     * @param target The target to send the data to.
+     */
+    void send(const std::string& data, const std::string& target)
     {
         if (zmq_sockets.find(target) == zmq_sockets.end()) {
-            LOGGER_ERROR("No connections were established with endpoint {} trying to send. {}", target, data);
+            LOGGER_ERROR("No connection established with endpoint {} while trying to send: {}", target, data);
             throw std::runtime_error("Error with endpoint connection.");
         }
         zmq::message_t message(data.begin(), data.end());
 
-        LOGGER_DEBUG("Enviamos el circuito a {}", target);
+        LOGGER_DEBUG("Sending circuit to {}", target);
         zmq_sockets[target].send(message, zmq::send_flags::none);
-        
     }
     
+    /**
+     * @brief Receives data from an origin.
+     * @param origin The origin of the data.
+     * @return The received data as a string.
+     */
     std::string recv(const std::string& origin)
     {
         if (!message_queue[origin].empty()) {
@@ -93,9 +124,9 @@ struct ClassicalChannel::Impl
                 zmq::message_t id;
                 zmq::message_t message;
                 
-                LOGGER_DEBUG("{} vamos a recibir el circuito de {}", zmq_id, origin);
-                [[maybe_unused]] auto ret1 = zmq_comm_server.recv(id, zmq::recv_flags::none);
-                [[maybe_unused]] auto ret2 = zmq_comm_server.recv(message, zmq::recv_flags::none);
+                LOGGER_DEBUG("{} is waiting to receive a circuit from {}", zmq_id, origin);
+                zmq_comm_server.recv(id, zmq::recv_flags::none);
+                zmq_comm_server.recv(message, zmq::recv_flags::none);
                 std::string id_str(static_cast<char*>(id.data()), id.size());
                 std::string data(static_cast<char*>(message.data()), message.size());
 
@@ -109,36 +140,25 @@ struct ClassicalChannel::Impl
     }
 };
 
-
-ClassicalChannel::ClassicalChannel() : pimpl_{std::make_unique<Impl>("")} 
+ClassicalChannel::ClassicalChannel() : pimpl_{std::make_unique<Impl>("")}
 { 
     endpoint = pimpl_->zmq_endpoint;
 }
 
-ClassicalChannel::ClassicalChannel(const std::string& id) : pimpl_{std::make_unique<Impl>(id)} 
+ClassicalChannel::ClassicalChannel(const std::string& id) : pimpl_{std::make_unique<Impl>(id)}
 { 
     endpoint = pimpl_->zmq_endpoint;
 }
 
 ClassicalChannel::~ClassicalChannel() = default;
 
-//-------------------------------------------------
-// Publish the endpoint for other processes to read
-//-------------------------------------------------
-void ClassicalChannel::publish(const std::string& suffix) 
+void ClassicalChannel::publish(const std::string& suffix)
 {
-    JSON communications_endpoint = 
-    {
-        {"communications_endpoint", endpoint}
-    };
+    JSON communications_endpoint = {{"communications_endpoint", endpoint}};
     write_on_file(communications_endpoint, constants::COMM_FILEPATH, suffix);
 }
 
-
-//--------------------------------------------------
-// Functions to stablish the other devices connected
-//--------------------------------------------------
-void ClassicalChannel::connect(const std::string& endpoint, const std::string& id) 
+void ClassicalChannel::connect(const std::string& endpoint, const std::string& id)
 {
     pimpl_->connect(endpoint, id);
 }
@@ -148,27 +168,18 @@ void ClassicalChannel::connect(const std::string& endpoint, const bool force_end
     pimpl_->connect(endpoint, force_endpoint);
 }
 
-// No id in this overload because is thought for classical communications,
-// which do not care for ids, its ok for them to use only the endpoints
-void ClassicalChannel::connect(const std::vector<std::string>& endpoints, const bool force_endpoint) 
+void ClassicalChannel::connect(const std::vector<std::string>& endpoints, const bool force_endpoint)
 {
-    for (const auto& endpoint : endpoints) {
-        pimpl_->connect(endpoint, force_endpoint);
+    for (const auto& ep : endpoints) {
+        pimpl_->connect(ep, force_endpoint);
     }
 }
 
-//------------------------------------------------------------------------------------
-// Send and recv functions for arbitrary info (such as a whole circuit or an endpoint)
-//------------------------------------------------------------------------------------
 void ClassicalChannel::send_info(const std::string& data, const std::string& target) { pimpl_->send(data, target); }
 std::string ClassicalChannel::recv_info(const std::string& origin) { return pimpl_->recv(origin); }
 
-//-----------------------------------------
-// Send and recv functions for measurements
-//-----------------------------------------
 void ClassicalChannel::send_measure(const int& measurement, const std::string& target) { pimpl_->send(std::to_string(measurement), target); }
 int ClassicalChannel::recv_measure(const std::string& origin) { return std::stoi(pimpl_->recv(origin)); }
-
 
 } // End of comm namespace
 } // End of cunqa namespace

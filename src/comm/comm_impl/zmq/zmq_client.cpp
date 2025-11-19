@@ -5,21 +5,37 @@
 #include "comm/client.hpp"
 #include "logger.hpp"
 
-
 namespace cunqa {
 namespace comm {
-    
+
+/**
+ * @struct Client::Impl
+ * @brief Implementation of the Client class using ZeroMQ.
+ *
+ * This struct contains the private members and methods for the ZeroMQ-based
+ * implementation of the client. It manages the ZeroMQ context and socket.
+ */
 struct Client::Impl {
+    /**
+     * @brief Constructs a new Impl object.
+     */
     Impl() :
         socket_{context_, zmq::socket_type::client}
     { }
 
-    ~Impl() 
+    /**
+     * @brief Destructor for the Impl object.
+     */
+    ~Impl()
     {
         socket_.close();
     }
 
-    void connect(const std::string& endpoint) 
+    /**
+     * @brief Connects to a server endpoint.
+     * @param endpoint The endpoint to connect to.
+     */
+    void connect(const std::string& endpoint)
     {
         try {
             socket_.connect(endpoint);
@@ -27,12 +43,16 @@ struct Client::Impl {
         } catch (const zmq::error_t& e) {
             LOGGER_ERROR("Unable to connect to endpoint {}. Error: {}", endpoint, e.what());
         } catch (const std::exception& e) {
-            LOGGER_ERROR("Trying to connect to a QPU located in a external node. {}", e.what());
+            LOGGER_ERROR("Error connecting to an external QPU node: {}", e.what());
             throw;
         }
     }
 
-    void send(const std::string& data) 
+    /**
+     * @brief Sends data to the server.
+     * @param data The data to send.
+     */
+    void send(const std::string& data)
     {
         try {
             zmq::message_t message(data.begin(), data.end());
@@ -43,7 +63,11 @@ struct Client::Impl {
         }
     }
 
-    std::string recv() 
+    /**
+     * @brief Receives data from the server.
+     * @return The received data as a string.
+     */
+    std::string recv()
     {
         try {
             zmq::message_t reply;
@@ -52,15 +76,19 @@ struct Client::Impl {
             LOGGER_DEBUG("Result correctly received: {}", result);
             return result;
         } catch (const zmq::error_t& e) {
-            LOGGER_ERROR("Error receiving the circuit: {}", e.what());
+            LOGGER_ERROR("Error receiving the result: {}", e.what());
         }
 
-        return std::string("{}");
+        return "{}";
     }
 
+    /**
+     * @brief Disconnects from the server.
+     * @param endpoint The endpoint to disconnect from.
+     */
     void disconnect(const std::string& endpoint)
     {
-        if (endpoint != "") {
+        if (!endpoint.empty()) {
             socket_.disconnect(endpoint);
         } else {
             socket_.close();
@@ -72,7 +100,6 @@ struct Client::Impl {
     zmq::socket_t socket_;
 };
 
-
 Client::Client() :
     pimpl_{std::make_unique<Impl>()}
 { }
@@ -83,13 +110,13 @@ void Client::connect(const std::string& endpoint) {
     pimpl_->connect(endpoint);
 }
 
-FutureWrapper<Client> Client::send_circuit(const std::string& circuit) 
+FutureWrapper<Client> Client::send_circuit(const std::string& circuit)
 { 
     pimpl_->send(circuit);
     return FutureWrapper<Client>(this); 
 }
 
-FutureWrapper<Client> Client::send_parameters(const std::string& parameters) 
+FutureWrapper<Client> Client::send_parameters(const std::string& parameters)
 { 
     pimpl_->send(parameters);
     return FutureWrapper<Client>(this); 

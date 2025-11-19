@@ -14,21 +14,33 @@
 namespace cunqa {
 namespace sim {
 
+/**
+ * @struct CCConfig
+ * @brief Configuration for the CCBackend.
+ *
+ * This struct holds all the configuration parameters for a CCBackend instance,
+ * including its name, version, number of qubits, and noise model. It also provides
+ * serialization and deserialization functions for JSON.
+ */
 struct CCConfig {
-    std::string name = "CCBackend";
-    std::string version = "0.0.1";
-    int n_qubits = 32;
-    std::string description = "Simple backend with classical communications.";
-    std::vector<std::vector<int>> coupling_map;
-    std::vector<std::string> basis_gates = constants::BASIS_GATES;
-    std::string custom_instructions;
-    std::vector<std::string> gates;
-    JSON noise_model = {};
-    std::string noise_properties_path;
-    std::string noise_path;
+    std::string name = "CCBackend"; ///< The name of the backend.
+    std::string version = "0.0.1"; ///< The version of the backend.
+    int n_qubits = 32; ///< The number of qubits in the backend.
+    std::string description = "A simple backend with classical communication capabilities."; ///< A description of the backend.
+    std::vector<std::vector<int>> coupling_map; ///< The coupling map of the qubits.
+    std::vector<std::string> basis_gates = constants::BASIS_GATES; ///< The basis gates supported by the backend.
+    std::string custom_instructions; ///< Custom instructions supported by the backend.
+    std::vector<std::string> gates; ///< A list of all gates supported by the backend.
+    JSON noise_model = {}; ///< The noise model to be used for simulations.
+    std::string noise_properties_path; ///< The path to the noise properties file.
+    std::string noise_path; ///< The path to the noise model file.
 
-    friend void from_json(const JSON& j, CCConfig &obj)
-    {
+    /**
+     * @brief Deserializes a CCConfig object from a JSON object.
+     * @param j The JSON object to deserialize from.
+     * @param obj The CCConfig object to deserialize to.
+     */
+    friend void from_json(const JSON& j, CCConfig &obj) {
         j.at("name").get_to(obj.name);
         j.at("version").get_to(obj.version);
         j.at("n_qubits").get_to(obj.n_qubits);
@@ -42,15 +54,19 @@ struct CCConfig {
         j.at("noise_path").get_to(obj.noise_path);
     }
 
-    friend void to_json(JSON& j, const CCConfig& obj)
-    {
-        j = {   
-            {"name", obj.name}, 
+    /**
+     * @brief Serializes a CCConfig object to a JSON object.
+     * @param j The JSON object to serialize to.
+     * @param obj The CCConfig object to serialize.
+     */
+    friend void to_json(JSON& j, const CCConfig& obj) {
+        j = {
+            {"name", obj.name},
             {"version", obj.version},
-            {"n_qubits", obj.n_qubits}, 
+            {"n_qubits", obj.n_qubits},
             {"description", obj.description},
             {"coupling_map", obj.coupling_map},
-            {"basis_gates", obj.basis_gates}, 
+            {"basis_gates", obj.basis_gates},
             {"custom_instructions", obj.custom_instructions},
             {"gates", obj.gates},
             {"noise_model", obj.noise_path},
@@ -59,28 +75,50 @@ struct CCConfig {
     }
 };
 
+/**
+ * @class CCBackend
+ * @brief A final class representing a quantum backend with classical communication capabilities.
+ *
+ * This class inherits from the Backend interface and provides a concrete
+ * implementation of a backend that supports classical communication. It uses a
+ * simulator strategy to execute quantum tasks.
+ */
 class CCBackend final : public Backend {
 public:
-    CCConfig cc_config;
-    
-    CCBackend(const CCConfig& cc_config, std::unique_ptr<SimulatorStrategy<CCBackend>> simulator): 
+    CCConfig cc_config; ///< The configuration for this backend.
+
+    /**
+     * @brief Constructs a new CCBackend object.
+     * @param cc_config The configuration for the backend.
+     * @param simulator A unique pointer to a simulator strategy.
+     */
+    CCBackend(const CCConfig& cc_config, std::unique_ptr<SimulatorStrategy<CCBackend>> simulator):
         cc_config{cc_config},
         simulator_{std::move(simulator)}
     {
         config = cc_config;
-        config["noise_model"] = cc_config.noise_model; // Not in to_json() to avoid the writing on qpus.json
+        config["noise_model"] = cc_config.noise_model;
     }
 
+    /**
+     * @brief Default copy constructor.
+     */
     CCBackend(CCBackend& cc_backend) = default;
 
-    inline JSON execute(const QuantumTask& quantum_task) const override
-    {
+    /**
+     * @brief Executes a quantum task using the assigned simulator strategy.
+     * @param quantum_task The quantum task to execute.
+     * @return The result of the execution as a JSON object.
+     */
+    inline JSON execute(const QuantumTask& quantum_task) const override {
         return simulator_->execute(*this, quantum_task);
     }
 
-    // TODO: Achieve this using the JSON adl serializer
-    JSON to_json() const override 
-    {
+    /**
+     * @brief Serializes the backend's configuration to a JSON object.
+     * @return The backend's configuration as a JSON object.
+     */
+    JSON to_json() const override {
         JSON config_json = config;
         const auto simulator_name = simulator_->get_name();
         config_json["simulator"] = simulator_name;
@@ -88,7 +126,7 @@ public:
     }
 
 private:
-    std::unique_ptr<SimulatorStrategy<CCBackend>> simulator_;
+    std::unique_ptr<SimulatorStrategy<CCBackend>> simulator_; ///< The simulator strategy used by this backend.
 };
 
 } // End of sim namespace

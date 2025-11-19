@@ -16,14 +16,23 @@ using namespace AER;
 namespace cunqa {
 namespace sim {
 
+/**
+ * @brief Converts a QuantumTask object to a format compatible with the AER simulator.
+ *
+ * This function takes a QuantumTask object and modifies its configuration and
+ * circuit to be compatible with the AER simulator. It adjusts the configuration
+ * options and replaces "clbits" with "memory" in the circuit instructions.
+ *
+ * @param quantum_task The QuantumTask object to convert.
+ * @return A new QuantumTask object compatible with the AER simulator.
+ */
 QuantumTask quantum_task_to_AER(const QuantumTask& quantum_task)
 {
-    int mem_slots = quantum_task.config.at("num_clbits");
     JSON new_config = {
         {"method", quantum_task.config.at("method")},
         {"shots", quantum_task.config.at("shots")},
         {"memory_slots", quantum_task.config.at("num_clbits")},
-        // TODO: Tune in the different options of the AER simulator
+        // TODO: Tune the different options of the AER simulator
     };
 
     if (quantum_task.config.contains("parallel_shots")) {
@@ -31,12 +40,11 @@ QuantumTask quantum_task_to_AER(const QuantumTask& quantum_task)
     }
 
     if (quantum_task.config.at("avoid_parallelization").get<bool>()) {
-        LOGGER_DEBUG("Trhead parallelization canceled");
-        //new_config["max_parallel_shots"] = 0;
+        LOGGER_DEBUG("Thread parallelization canceled");
         new_config["max_parallel_threads"] = 1;
     }
 
-    //JSON Object because if not it generates an array
+    // JSON Object because if not it generates an array
     JSON new_circuit = {
         {"config", new_config},
         {"instructions", JSON::parse(std::regex_replace(quantum_task.circuit.dump(),
@@ -46,8 +54,17 @@ QuantumTask quantum_task_to_AER(const QuantumTask& quantum_task)
     return QuantumTask(new_circuit, new_config);
 }
 
-
-void convert_standard_results_Aer(JSON& res, const int& num_clbits) 
+/**
+ * @brief Converts the standard results from the Aer simulator to the desired format.
+ *
+ * This function takes a JSON object containing the results from an Aer simulator
+ * execution and converts the hexadecimal keys in the "counts" data to binary
+ * strings, matching the Qiskit/AER convention.
+ *
+ * @param res The JSON object containing the results to convert.
+ * @param num_clbits The number of classical bits.
+ */
+void convert_standard_results_Aer(JSON& res, const int& num_clbits)
 {
     JSON counts = res.at("results")[0].at("data").at("counts").get<JSON>();
     JSON modified_counts;
@@ -59,10 +76,10 @@ void convert_standard_results_Aer(JSON& res, const int& num_clbits)
             hex_key = hex_key.substr(2);
         }
 
-        // Convert hex string to unsigned long long (support up to 100 bits)
-        // Use std::bitset<100> for binary conversion
+        // Use std::bitset<100> for binary conversion (supports up to 100 bits)
         std::bitset<100> bits(0);
         size_t hex_len = hex_key.length();
+
         // Convert hex to binary manually
         for (size_t i = 0; i < hex_len; ++i) {
             char c = hex_key[hex_len - 1 - i];
@@ -84,7 +101,7 @@ void convert_standard_results_Aer(JSON& res, const int& num_clbits)
             binary_string += bits[i] ? '1' : '0';
         }
 
-        modified_counts[binary_string] = inner; 
+        modified_counts[binary_string] = inner;
     }
 
     res.at("results")[0].at("data").at("counts") = modified_counts;

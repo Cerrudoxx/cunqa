@@ -38,27 +38,26 @@ from qiskit.providers.backend_compat import convert_to_target
 
 
 class TranspileError(Exception):
-    """Exception for error during the transpilation of a circuit to a given :py:class:`~cunqa.backend.Backend`. """
+    """Exception for errors that occur during the transpilation of a circuit."""
     pass
 
-def transpiler(circuit, backend, opt_level = 1, initial_layout = None, seed = 81):
-    """
-    Function to transpile a circuit according to a given :py:class:`~cunqa.backend.Backend`.
-    The circuit is returned in the same format as it was originally.
+def transpiler(circuit, backend, opt_level=1, initial_layout=None, seed=81):
+    """Transpiles a circuit according to a given backend.
 
-    Transpilation instructions are `opt_level`, which defines how optimal is the transpilation, default is ``1``; `initial_layout`
-    specifies the set of "real" qubits to which the quantum registers of the circuit are assigned.
-    These instructions are associated to the `qiskit.transpiler.passmanager.StagedPassManager <https://quantum.cloud.ibm.com/docs/es/api/qiskit/qiskit.transpiler.StagedPassManager>`_,
-    since it is used in the process.
+    The circuit is returned in the same format as it was provided.
 
     Args:
-        circuit (dict | qiskit.QuantumCircuit | ~cunqa.circuit.CunqaCircuit): circuit to be transpiled.
+        circuit (dict or QuantumCircuit or CunqaCircuit): The circuit to be
+            transpiled.
+        backend (Backend): The backend to which the circuit will be transpiled.
+        opt_level (int): The optimization level for creating the pass manager.
+            Defaults to 1.
+        initial_layout (list[int], optional): The initial mapping of virtual
+            qubits to physical qubits.
+        seed (int): The seed for the transpiler. Defaults to 81.
 
-        backend (~cunqa.backend.Backend): backend which transpilation will be done respect to.
-
-        opt_level (int): optimization level for creating the `qiskit.transpiler.passmanager.StagedPassManager`. Default set to 1.
-
-        initial_layout (list[int]): initial position of virtual qubits on physical qubits for transpilation, lenght must be equal to the number of qubits in the circuit.
+    Returns:
+        The transpiled circuit in the same format as the input.
     """
 
     # converting to QuantumCircuit

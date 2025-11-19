@@ -6,32 +6,42 @@
 #include "logger.hpp"
 
 namespace cunqa {
-inline std::string reverse_string(const std::string& bitstring) 
+
+/**
+ * @brief Reverses a string.
+ * @param bitstring The string to reverse.
+ * @return The reversed string.
+ */
+inline std::string reverse_string(const std::string& bitstring)
 {
-    std::string reverse_bitstring(bitstring.rbegin(), bitstring.rend()); 
-    return reverse_bitstring;
+    return {bitstring.rbegin(), bitstring.rend()};
 }
 
-inline void reverse_bitstring_keys_json(std::map<std::string, std::size_t>& counts) 
+/**
+ * @brief Reverses the keys of a map, which are assumed to be bitstrings.
+ * @param counts A reference to a map of bitstring keys and size_t values.
+ */
+inline void reverse_bitstring_keys_json(std::map<std::string, std::size_t>& counts)
 {
-    std::map<std::string, std::size_t> modified_counts; 
+    std::map<std::string, std::size_t> modified_counts;
 
     for (const auto& [key, inner] : counts) {
-        std::string reverse_bitstring = reverse_string(key); 
-        modified_counts[reverse_bitstring] = inner; 
+        modified_counts[reverse_string(key)] = inner;
     }
-    counts.clear();
     counts = modified_counts;
 }
 
-inline void reverse_bitstring_keys_json(JSON& result) 
+/**
+ * @brief Reverses the keys of the "counts" object within a JSON object.
+ * @param result A reference to a JSON object containing a "counts" object.
+ */
+inline void reverse_bitstring_keys_json(JSON& result)
 {
     JSON counts = result.at("counts").get<JSON>();
-    JSON modified_counts; 
+    JSON modified_counts;
 
     for (const auto& [key, inner] : counts.items()) {
-        std::string reverse_bitstring = reverse_string(key); 
-        modified_counts[reverse_bitstring] = inner; 
+        modified_counts[reverse_string(key)] = inner;
     }
     result.at("counts") = modified_counts;
 }

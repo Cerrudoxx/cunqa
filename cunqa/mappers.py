@@ -70,26 +70,29 @@ import copy
 
 
 def run_distributed(circuits: "list[Union[dict, 'CunqaCircuit']]", qpus: "list['QPU']", **run_args: Any) -> "list[QJob]":
-    """
-    Function to send circuits to serveral virtual QPUs allowing classical or quantum communications among them. 
-    Each circuit will be sent to each QPU in order, therefore both lists must be of the same size.
+    """Sends circuits to several virtual QPUs, allowing for classical or
+    quantum communications among them.
 
-    Because the function is destined for executions that require communications, only :py:class:`~cunqa.circuit.CunqaCircuit` or instruction sets are accepted.
-    The arguments provided will be the same for all :py:class:`~cunqa.qjob.QJob` objects created.
-    
-    .. warning::
-        If *transpile*, *initial_layout* or *opt_level* are passed as *run_args* they will be ignored since for the current version
-        transpilation is not supported when communications are present.
+    Each circuit is sent to a corresponding QPU in order, so both lists must
+    be of the same size. Because this function is intended for executions
+    that require communications, only `CunqaCircuit` objects or instruction
+    sets are accepted. The provided arguments will be the same for all
+    `QJob` objects created.
+
+    Warning:
+        If `transpile`, `initial_layout`, or `opt_level` are passed as
+        `run_args`, they will be ignored, as transpilation is not supported
+        in the current version when communications are present.
 
     Args:
-        circuits (list[dict] | list[~cunqa.circuit.CunqaCircuit]): circuits to be run.
+        circuits: A list of circuits to be run, either as `CunqaCircuit`
+            objects or dictionaries.
+        qpus: A list of `QPU` objects associated with the virtual QPUs
+            where the circuits will be run.
+        **run_args: Any other run arguments and parameters.
 
-        qpus (list[~cunqa.qpu.QPU]): QPU objects associated to the virtual QPUs in which the circuits want to be run.
-    
-        run_args: any other run arguments and parameters.
-
-    Return:
-        List of :py:class:`~cunqa.qjob.QJob` objects.
+    Returns:
+        A list of `QJob` objects.
     """
 
     distributed_qjobs = []
@@ -161,138 +164,95 @@ def run_distributed(circuits: "list[Union[dict, 'CunqaCircuit']]", qpus: "list['
 
 
 class QJobMapper:
+    """Maps the `QJob.upgrade_parameters` method to a set of jobs.
+
+    This class is designed for optimization algorithms where a parametric
+    circuit needs to be updated with new parameters. It takes a list of
+    `QJob` objects and can be called with a set of parameters and a cost
+    function to evaluate the results.
+
+    Attributes:
+        qjobs (list[QJob]): The list of jobs that are mapped.
     """
-    Class to map the method :py:meth:`~cunqa.qjob.QJob.upgrade_parameters` to a set of jobs sent to virtual QPUs.
-
-    The core of the class is on its :py:meth:`~cunqa.mappers.QJobMapper.__call__` method, to which parameters that the method :py:meth:`~cunqa.qjob.QJob.upgrade_parameters` takes are passed toguether with a cost function, so that a the value for this cost for each initial :py:class:`~cunqa.qjob.QJob` is returned.
-
-    An example is shown below, once we have a list of :py:class:`~cunqa.qjob.QJob` objects as *qjobs*:
-
-    >>> mapper = QJobMapper(qjobs)
-    >>>
-    >>> # defining the parameters set accordingly to the number of parameters
-    >>> # of the circuit and the number of QJobs in the list.
-    >>> new_parameters = [...]
-    >>> 
-    >>> # defining the cost function passed to the result of each QJob
-    >>> def cost_function(result):
-    >>>     counts = result.counts
-    >>>     ...
-    >>>     return cost_value
-    >>> 
-    >>> cost_values = mapper(cost_function, new_parameters)
-
-    We intuitively see how convinient this class can be for optimization algorithms: one has a parametric circuit to which updated sets of parameters can be sent
-    obtaining the value of the cost back. Examples applied to optimizations are shown at the `Examples gallery <https://cesga-quantum-spain.github.io/cunqa/_examples/Optimizers_II_mapping.html>`_.
-
-    """
-    qjobs: "list['QJob']" #: List of jobs that are mapped.
+    qjobs: "list['QJob']"
 
     def __init__(self, qjobs: "list['QJob']"):
-        """
-        Class constructor.
+        """Initializes the QJobMapper.
 
         Args:
-            qjobs (list[~cunqa.qjob.QJob]): list of :py:class:`~cunqa.qjob.QJob` objects to be mapped.
-
+            qjobs: A list of `QJob` objects to be mapped.
         """
         self.qjobs = qjobs
         logger.debug(f"QJobMapper initialized with {len(qjobs)} QJobs.")
 
     def __call__(self, func, population):
-        """
-        Callable method to map the function *func* to the results of assigning *population* to the given jobs.
-        Regarding the *population*, each set of parameters will be assigned to each :py:class:`~cunqa.qjob.QJob` object, so the list must
-        have size (*N,p*), being *N* the lenght of :py:attr:`~cunqa.mappers.QJobMapper.qjobs` and *p* the number of parameters in the circuit.
-        Mainly, this is thought for the function to take a :py:class:`~cunqa.result.Result` object and to return a value.
-        For example, the function can evaluate the expected value of an observable from the output of the circuit.
+        """Maps a function to the results of assigning a population to the jobs.
 
         Args:
-            func (callable): function to be passed to the results of the jobs. 
+            func (callable): The function to be applied to the results of the
+                jobs.
+            population (list[list[int or float]]): A list of vectors to be
+                mapped to the jobs.
 
-            population (list[list[int | float]]): list of vectors to be mapped to the jobs.
-            
-        Return:
-            List of outputs of the function applied to the results of each job for the given population.
+        Returns:
+            A list of the outputs of the function applied to the results of
+            each job for the given population.
         """
         qjobs_ = []
         for i, params in enumerate(population):
             qjob = self.qjobs[i]
-            logger.debug(f"Uptading params for QJob {qjob}...")
+            logger.debug(f"Updating parameters for QJob {qjob}...")
             qjob.upgrade_parameters(params.tolist())
             qjobs_.append(qjob)
 
-        logger.debug("About to gather results ...")
-        results = gather(qjobs_) # we only gather the qjobs we upgraded.
+        logger.debug("Gathering results...")
+        results = gather(qjobs_)
 
         return [func(result) for result in results]
 
 
 class QPUCircuitMapper:
+    """Maps the `QPU.run` method to a list of QPUs.
+
+    This class is initialized with a list of `QPU` objects, a circuit, and
+    simulation instructions. When called, it assigns a set of parameters to
+    the circuit and sends it to each QPU.
+
+    Attributes:
+        qpus (list[QPU]): The `QPU` objects to which the circuit is mapped.
+        circuit (QuantumCircuit): The circuit to which parameters are assigned.
+        transpile (bool, optional): Whether transpilation should be done before
+            sending each circuit.
+        initial_layout (list[int], optional): The initial mapping of virtual
+            qubits to physical qubits for transpilation.
+        run_parameters (Any, optional): Any other run instructions for the
+            simulation.
     """
-    Class to map the method :py:meth:`~cunqa.qpu.QPU.run` to a list of QPUs.
+    qpus: "list['QPU']"
+    circuit: 'QuantumCircuit'
+    transpile: Optional[bool]
+    initial_layout: Optional["list[int]"]
+    run_parameters: Optional[Any]
 
-    The class is initialized with a list of :py:class:`~cunqa.qpu.QPU` objects associated to the virtual QPUs that are intended to work with, toguether
-    with the circuit and the simulation instructions needed for its execution.
-
-    Then, its :py:meth:`~cunqa.mappers.QPUCircuitMapper.__call__` method takes a set of parameters as *population* to assing to the circuit.
-    Each assembled circuit is sent to each virtual QPU with the instructions provided on the instatiation of the mapper.
-    The method returns the value for the provided function *func* for the result of each simulation.
-
-    Its use is pretty similar to :py:class:`~cunqa.mappers.QJobMapper`, but not needing to create the :py:class:`~cunqa.qjob.QJob` objects ahead:
-
-    >>> qpus = get_QPUs(...)
-    >>>
-    >>> # creating the mapper with the pre-defined parametric circuit and other simulation instructions.
-    >>> mapper = QPUCircuitMapper(qpus, circuit, shots = 1000, ...)
-    >>>
-    >>> # defining the parameters set accordingly to the number of parameters
-    >>> # of the circuit and the number of QJobs in the list.
-    >>> new_parameters = [...]
-    >>> 
-    >>> # defining the cost function passed to the result of each QJob
-    >>> def cost_function(result):
-    >>>     counts = result.counts
-    >>>     ...
-    >>>     return cost_value
-    >>> 
-    >>> cost_values = mapper(cost_function, new_parameters)
-
-    For each call of the mapper, circuits are assembled, jobs are sent, results are gathered and cost values are calculated.
-    Its implementation for optimization problems is shown at the `Examples gallery <https://cesga-quantum-spain.github.io/cunqa/_examples/Optimizers_II_mapping.html>`_.
-
-    """
-    qpus: "list['QPU']" #: :py:class:`~cunqa.qpu.QPU` ibjects linked to the virtual QPUs to wich the circuit is mapped.
-    circuit: 'QuantumCircuit' #: Circuit to which parameters are assigned at the :py:meth:`QPUCircuitMapper.__call__` method.
-    transpile: Optional[bool] #: Weather transpilation is wanted to be done before sending each circuit.
-    initial_layout: Optional["list[int]"] #: Transpilation information, qubits of the backend to which the qubits of the circuit are mapped.
-    run_parameters: Optional[Any] #: Any other run instructions needed for the simulation.
-
-    def __init__(self, qpus: "list['QPU']", circuit: Union[dict,'QuantumCircuit','CunqaCircuit'], transpile: Optional[bool] = False, initial_layout: Optional["list[int]"] = None, **run_parameters: Any):
-        """
-        Class constructor.
+    def __init__(self, qpus: "list['QPU']", circuit: Union[dict, 'QuantumCircuit', 'CunqaCircuit'], transpile: Optional[bool] = False, initial_layout: Optional["list[int]"] = None, **run_parameters: Any):
+        """Initializes the QPUCircuitMapper.
 
         Args:
-            qpus (list[~cunqa.qpu.QPU]): list of objects linked to the virtual QPUs intended to be used.
-
-            circuit (dict | ~cunqa.circuit.CunqaCircuit | qiskit.QuantumCirucit): circuit to be run in the QPUs.
-
-            transpile (bool): if True, transpilation will be done with respect to the backend of the given QPU. Default is set to False.
-
-            initial_layout (list[int]): Initial position of virtual qubits on physical qubits for transpilation.
-
-            **run_parameters : any other simulation instructions.
-
+            qpus: A list of `QPU` objects to be used.
+            circuit: The circuit to be run on the QPUs.
+            transpile (bool): If `True`, transpilation will be done with
+                respect to the backend. Defaults to `False`.
+            initial_layout (list[int], optional): The initial mapping of
+                virtual qubits to physical qubits for transpilation.
+            **run_parameters: Any other simulation instructions.
         """
         self.qpus = qpus
 
-        if isinstance(circuit, QuantumCircuit):
-            self.circuit = circuit
+        if not isinstance(circuit, QuantumCircuit):
+            logger.error(f"The parametric circuit must be a QuantumCircuit, but {type(circuit)} was provided. [{TypeError.__name__}].")
+            raise SystemExit
 
-        else:
-            logger.error(f"Parametric circuit must be <class 'qiskit.circuit.quantumcircuit.QuantumCircuit'>, but {type(circuit)} was provided [{TypeError.__name__}].")
-            raise SystemExit # User's level
-
+        self.circuit = circuit
         self.transpile = transpile
         self.initial_layout = initial_layout
         self.run_parameters = run_parameters
@@ -300,24 +260,19 @@ class QPUCircuitMapper:
         logger.debug(f"QPUMapper initialized with {len(qpus)} QPUs.")
 
     def __call__(self, func, population):
-        """
-        Callable method to map the function *func* to the results of the circuits sent to the given QPUs after assigning them *population*.
-        Regarding the *population*, each set of parameters will be assigned to each circuit, so the list must
-        have size (*N,p*), being *N* the lenght of :py:attr:`~cunqa.mappers.QJobMapper.qpus` and *p* the number of parameters in the circuit.
-        Mainly, this is thought for the function to take a :py:class:`~cunqa.result.Result` object and to return a value.
-        For example, the function can evaluate the expected value of an observable from the output of the circuit.
+        """Maps a function to the results of circuits sent to the QPUs.
 
         Args:
-            func (func): function to be mapped to the QPUs. It must take as argument the an object <class 'qjob.Result'>.
+            func (callable): The function to be mapped to the QPUs. It must
+                take a `Result` object as an argument.
+            population (list[list[float or int]]): A population of vectors to
+                be mapped to the circuits.
 
-            params (list[list[float | int]]): population of vectors to be mapped to the circuits sent to the QPUs.
-
-        Return:
-            List of the results of the function applied to the output of the circuits sent to the QPUs.
+        Returns:
+            A list of the results of the function applied to the output of the
+            circuits.
         """
-
         qjobs = []
-
         try:
             tick = time.time()
             for i, params in enumerate(population):
@@ -325,24 +280,21 @@ class QPUCircuitMapper:
                 circuit_assembled = self.circuit.assign_parameters(params)
 
                 logger.debug(f"Sending QJob to QPU {qpu._id}...")
-                qjobs.append(qpu.run(circuit_assembled, transpile = self.transpile, initial_layout = self.initial_layout, **self.run_parameters))
+                qjobs.append(qpu.run(circuit_assembled, transpile=self.transpile, initial_layout=self.initial_layout, **self.run_parameters))
 
-            
-            logger.debug(f"About to gather {len(qjobs)} results ...")
+            logger.debug(f"Gathering {len(qjobs)} results...")
             results = gather(qjobs)
             tack = time.time()
-            median = sum([res.time_taken for res in results])/len(results)
+            median = sum(res.time_taken for res in results) / len(results)
 
             print("Mean simulation time: ", median)
-            print("Total distribution and gathering time: ", tack-tick)
+            print("Total distribution and gathering time: ", tack - tick)
 
             return [func(result) for result in results]
-
         
         except QiskitError as error:
-            logger.error(f"Error while assigning parameters to QuantumCircuit, please check they have the correct size [{type(error).__name__}]: {error}.")
-            raise SystemExit # User's level
-        
+            logger.error(f"An error occurred while assigning parameters to the QuantumCircuit. Check if the size is correct. [{type(error).__name__}]: {error}.")
+            raise SystemExit
         except Exception as error:
-            logger.error(f"Some error occurred with the circuit [{type(error).__name__}]: {error}")
-            raise SystemExit # User's level
+            logger.error(f"An error occurred with the circuit: [{type(error).__name__}]: {error}")
+            raise SystemExit
