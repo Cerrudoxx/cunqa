@@ -47,7 +47,7 @@ circ5 = CunqaCircuit(3, 3, id="Fifth")
 circ5.rz(np.pi, 0)
 circ5.rx(np.pi/2, 1)
 circ5.ry(np.pi/4, 2)
-long_sum = CunqaCircuit.sum(( list_circuits := [circ1, circ5, circ2, circ5, circ5]))
+long_sum = CunqaCircuit.sum(( list_circuits := [circ1, circ5, circ2, circ5, circ5]), force_execution = True)
 print(f"Use of CunqaCircuit.sum, to sum {[circ._id for circ in list_circuits]}")
 print(f"Instructions of the long sum are:\n {long_sum.instructions}\n")
 
