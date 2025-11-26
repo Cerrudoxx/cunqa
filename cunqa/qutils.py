@@ -92,21 +92,22 @@ from cunqa.constants import QPUS_FILEPATH
 class QRaiseError(Exception):
     """Exception for errors during qraise slurm command."""
     pass
-
-
-def qraise(n, t, *,
-           classical_comm = False,
-           quantum_comm = False,
-           simulator = None,
-           backend = None,
-           fakeqmio = False,
-           family = None,
-           co_located = True,
-           cores = None,
-           mem_per_qpu = None,
-           n_nodes = None,
-           node_list = None,
-           qpus_per_node= None) -> Union[tuple, str]:
+               
+               
+def qraise(n, t, *, 
+           classical_comm = False, 
+           quantum_comm = False,  
+           simulator = None, 
+           backend = None, 
+           fakeqmio = False, 
+           family = None, 
+           co_located = True, 
+           cores = None, 
+           mem_per_qpu = None, 
+           n_nodes = None, 
+           node_list = None, 
+           qpus_per_node= None,
+           partition = None) -> Union[tuple, str]:
     """
     Raises virtual QPUs and returns the job id associated to its SLURM job.
 
@@ -185,6 +186,9 @@ def qraise(n, t, *,
             command = command + f" --qpus_per_node={str(qpus_per_node)}"
         if backend is not None:
             command = command + f" --backend={str(backend)}"
+        if partition is not None:
+            command = command + f" --partition={str(partition)}"
+
 
         if not os.path.exists(QPUS_FILEPATH):
             with open(QPUS_FILEPATH, "w") as file:
