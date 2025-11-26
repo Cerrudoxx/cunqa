@@ -119,7 +119,7 @@ if __name__ == "__main__":
     angles_to_compute = [1 / 2**10, 1 / np.pi]   
     shots = 10
     cores_per_qpu = 4
-    mem_per_qpu = 60 # en GB
+    mem_per_qpu = 6 # en GB
     seed = 13
 
     dist_qpe_benchmarking(angles_to_compute, n_ancilla_qubits, shots, cores_per_qpu, mem_per_qpu, seed)

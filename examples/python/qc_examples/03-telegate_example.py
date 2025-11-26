@@ -11,8 +11,8 @@ from cunqa.qjob import gather
 
 # Raise QPUs (allocates classical resources for the simulation job) and retrieve them using get_QPUs
 #family = qraise(2, "00:10:00", simulator="Cunqa", quantum_comm=True, co_located = True)
-#qpus  = get_QPUs(on_node=False, family = family)
-qpus = get_QPUs(on_node=False)
+qpus  = get_QPUs(on_node=False)
+
 
 #qpus_QPE  = get_QPUs(on_node=False)
 ########## Circuits to run ##########

@@ -24,7 +24,7 @@ PYBIND_PATH=$(python3 -c "import pybind11; print(pybind11.get_cmake_dir())")
 
 if [ -z "$PYBIND_PATH" ]; then
     echo "Error: Could not find pybind11. Make sure to run: pip install pybind11"
-    exit 1
+   # exit 1
 fi
 
 export pybind11_DIR=$PYBIND_PATH
