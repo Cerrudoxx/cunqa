@@ -41,6 +41,7 @@ void write_sbatch_header(std::ofstream& sbatchFile, const CunqaArgs& args)
     
     if(args.partition.has_value())
         sbatchFile << "#SBATCH --partition=" << args.partition.value() << "\n";
+	printf("ESCRIBIENDO: particion en sbatch")
 
     if (args.qpus_per_node.has_value()) {
         if (args.n_qpus < args.qpus_per_node) {
@@ -192,7 +193,7 @@ int main(int argc, char* argv[])
 
     // Executing and deleting the file
     std::system("sbatch qraise_sbatch_tmp.sbatch");
-    std::system("rm qraise_sbatch_tmp.sbatch");
+   // std::system("rm qraise_sbatch_tmp.sbatch");
     
     
     return 0;
