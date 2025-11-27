@@ -95,7 +95,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
 # =====================================================================
 find_or_fetch_package(
   nlohmann_json
-  "https://github.com/nlohmann/json.git"
+  "git@github.com:nlohmann/json.git"
   "3.11.3"
   "v3.11.3"
 )
@@ -109,7 +109,7 @@ set(SPDLOG_BUILD_PIC ON          CACHE BOOL "Build with position independent cod
 
 find_or_fetch_package(
   spdlog
-  "https://github.com/gabime/spdlog.git"
+  "git@github.com:gabime/spdlog.git"
   "1.16.0"
   "v1.16.0"
 )
@@ -120,7 +120,7 @@ install(TARGETS spdlog DESTINATION "${CMAKE_INSTALL_LIBDIR}") # does this fails 
 # =====================================================================
 find_or_fetch_package(
   mqt-ddsim
-  "https://github.com/munich-quantum-toolkit/ddsim.git"
+  "git@github.com:munich-quantum-toolkit/ddsim.git"
   "1.24.0"
   "v1.24.0"
 )
@@ -150,7 +150,7 @@ set(CPPZMQ_BUILD_TESTS OFF      CACHE BOOL "Disable tests"              FORCE)
 
 find_or_fetch_package(
   cppzmq
-  "https://github.com/zeromq/cppzmq.git"
+  "git@github.com:zeromq/cppzmq.git"
   "4.11.0"
   "v4.11.0"
 )
@@ -160,7 +160,7 @@ find_or_fetch_package(
 # =====================================================================
 find_or_fetch_package(
   cunqasimulator
-  "https://github.com/CESGA-Quantum-Spain/cunqasimulator.git"
+  "git@github.com:CESGA-Quantum-Spain/cunqasimulator.git"
   "0.1.1"
   "v0.1.1"
 )
@@ -180,7 +180,7 @@ FetchContent_MakeAvailable(argparse)
 # =====================================================================
 FetchContent_Declare(
     aer
-    GIT_REPOSITORY "https://github.com/CESGA-Quantum-Spain/qiskit-aer_v0.17.2.git"
+    GIT_REPOSITORY "git@github.com:CESGA-Quantum-Spain/qiskit-aer_v0.17.2.git"
     GIT_TAG "717e77a5257c35ce49dfbb4e8ba8c23acbadfe14"
 )
 FetchContent_GetProperties(aer)
