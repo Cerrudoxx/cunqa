@@ -16,7 +16,7 @@ QPU::QPU(std::unique_ptr<sim::Backend> backend, const std::string& mode, const s
     family_{family}
 { }
 
-void QPU::turn_ON() 
+void QPU::turn_ON()
 {
     std::thread listen([this](){this->recv_data_();});
     std::thread compute([this](){this->compute_result_();});
@@ -31,20 +31,20 @@ void QPU::turn_ON()
 }
 
 void QPU::compute_result_()
-{    
-    QuantumTask quantum_task_; 
-    while (true) 
+{
+    QuantumTask quantum_task_;
+    while (true)
     {
         std::unique_lock<std::mutex> lock(queue_mutex_);
         queue_condition_.wait(lock, [this] { return !message_queue_.empty(); });
 
-        while (!message_queue_.empty()) 
+        while (!message_queue_.empty())
         {
             try {
                 std::string message = message_queue_.front();
                 message_queue_.pop();
                 lock.unlock();
-                
+
                 quantum_task_.update_circuit(message);
                 auto result = backend->execute(quantum_task_);
                 server->send_result(result.dump());
@@ -62,8 +62,8 @@ void QPU::compute_result_()
     }
 }
 
-void QPU::recv_data_() 
-{   
+void QPU::recv_data_()
+{
     server->accept();
     while (true) {
         try {
@@ -88,4 +88,3 @@ void QPU::recv_data_()
 
 
 } // End of cunqa namespace
-

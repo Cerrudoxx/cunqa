@@ -157,6 +157,24 @@ def run_distributed(circuits: "list[Union[dict, 'CunqaCircuit']]", qpus: "list['
     for circuit, qpu in zip(circuit_jsons, qpus):
         distributed_qjobs.append(qpu.run(circuit, **run_parameters))
 
+    # #-------SOLUCIÓN TEMPORAL-----------
+    if len(qpus) > len(circuit_jsons):
+        unused_qpus = qpus[len(circuit_jsons):]
+        logger.info(f"Sending dummy circuits to {len(unused_qpus)} unused QPUs to unlock infrastructure synchronization.")
+
+        # Creamos un circuito vacío de 1 qubit
+        dummy_circuit = CunqaCircuit(1, id="dummy_sync")
+
+        for qpu in unused_qpus:
+            try:
+                # Enviamos la ejecución pero NO guardamos el QJob en distributed_qjobs
+                # para que el usuario no reciba resultados basura en su gather().
+                qpu.run(dummy_circuit, **run_parameters)
+            except Exception as e:
+                logger.warning(f"Failed to run dummy circuit on unused QPU {qpu._id}: {e}")
+
+
+
     return distributed_qjobs
 
 
