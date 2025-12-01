@@ -9,15 +9,15 @@ if [ "$#" -gt 2 ]; then
     exit 1
 fi
 
-module purge
+#module purge
 
 echo "Configuring environment for LUSITANIA"
 
-module load gcc/gcc-11.2.0 cmake/cmake-3.23 openblas/openblas-0.3.24 openmpi/openmpi-4.1.2-gcc11.2.0 python/python-3.10
+module load gcc/gcc-11.2.0 cmake/cmake-3.23 openblas/openblas-0.3.24 openmpi/openmpi-4.1.2-gcc11.2.0 python/python-3.10 ccache/ccache-4.8.3
 
 export STORE=$HOME
-export CC=mpicc
-export CXX=mpicxx
+export CC="ccache mpicc"
+export CXX="ccache mpicxx"
 export CMAKE_PREFIX_PATH="/lusitania_apps/openblas-0.3.24:$CMAKE_PREFIX_PATH"
 export BLA_VENDOR=OpenBLAS
 PYBIND_PATH=$(python3 -c "import pybind11; print(pybind11.get_cmake_dir())")
@@ -55,6 +55,6 @@ if [ "$USE_NINJA" = true ]; then
   cmake --install build/
 else
   cmake -S . -B build/ -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX"
-  cmake --build build/ --parallel $(nproc)
+  time cmake --build build/ --parallel $(nproc)
   cmake --install build/
 fi
