@@ -2,6 +2,30 @@ cmake_minimum_required(VERSION 3.21)
 
 project(CUNQA VERSION 0.0.1 LANGUAGES CXX)
 
+# --- INICIO PARCHE DE ARQUITECTURA (Lusi2 / Sandy Bridge) ---
+set(NATIVE_ARCH OFF CACHE BOOL "Force disable MQT native" FORCE)
+set(DDSIM_NATIVE_ARCH OFF CACHE BOOL "Force disable DDSim native" FORCE)
+set(ENABLE_AVX2 OFF CACHE BOOL "Disable AVX2 usage in Aer" FORCE)
+set(ENABLE_NATIVE OFF CACHE BOOL "Generic native disable" FORCE)
+
+set(FLAGS_BLACKLIST 
+    "-march=x86-64"      # Base genérica segura
+    "-mtune=sandybridge" # Optimizar para Sandy Bridge sin romper compatibilidad
+    "-mno-avx2"          # Prohibido: AVX2
+    "-mno-fma"           # Prohibido: FMA (Fused Multiply-Add)
+    "-mno-bmi"           # Prohibido: Bit Manipulation 1
+    "-mno-bmi2"          # Prohibido: Bit Manipulation 2
+    "-mno-f16c"          # Prohibido: Float16 conversion
+    "-mno-rdrnd"         # Prohibido: RDRAND
+    "-mno-movbe"         # Prohibido: MOVBE (Move Big Endian)
+    "-mno-abm"           # Prohibido: Advanced Bit Manipulation
+    "-mno-fsgsbase"      # Prohibido: FSGSBASE
+)
+
+add_compile_options(${FLAGS_BLACKLIST})
+add_link_options(${FLAGS_BLACKLIST})
+# --- FIN PARCHE DE ARQUITECTURA ---
+
 message(STATUS "CMAKE BUILD TYPE: ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE CONFIGURATION TYPE: ${CMAKE_CONFIGURATION_TYPES}")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -31,7 +55,6 @@ include_directories("${CMAKE_BINARY_DIR}/src")
 
 
 # Set INSTALL paths
-# TODO: I put this if 
 if(NOT DEFINED CMAKE_INSTALL_PREFIX OR CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")
     set(CMAKE_INSTALL_PREFIX "$ENV{HOME}" CACHE PATH "Install prefix" FORCE)
 endif()
@@ -48,7 +71,8 @@ if(NOT SYSTEM_NAME OR NOT (SYSTEM_NAME STREQUAL "QMIO" OR SYSTEM_NAME STREQUAL "
 endif()
 
 if(${SYSTEM_NAME} STREQUAL "QMIO")
-  set(pybind11_DIR "/opt/cesga/qmio/hpc/software/Compiler/gcccore/12.3.0/pybind11/2.13.6-python-3.11.9/lib64/python3.11/site-packages/pybind11/share/cmake/pybind11/")
+  set(pybind11_DIR 
+"/opt/cesga/qmio/hpc/software/Compiler/gcccore/12.3.0/pybind11/2.13.6-python-3.11.9/lib64/python3.11/site-packages/pybind11/share/cmake/pybind11/")
   find_package(Python 3.11.9 EXACT COMPONENTS Interpreter Development)
   find_package(pybind11 2.13 REQUIRED)
   set(PYBIND11_PYTHON_VERSION 3.11 CACHE STRING "")
@@ -113,7 +137,7 @@ find_or_fetch_package(
   "1.16.0"
   "v1.16.0"
 )
-install(TARGETS spdlog DESTINATION "${CMAKE_INSTALL_LIBDIR}") # does this fails with FindPackage??
+install(TARGETS spdlog DESTINATION "${CMAKE_INSTALL_LIBDIR}") 
 
 # =====================================================================
 #  MQT-DDSIM - quantum circuit simulator
@@ -176,7 +200,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(argparse)
 
 # =====================================================================
-#  AER - Qiskit simulator headers (fork with version 0.17.2 minimal fix)
+#  AER - Qiskit simulator headers 
 # =====================================================================
 FetchContent_Declare(
     aer
@@ -185,25 +209,22 @@ FetchContent_Declare(
 )
 FetchContent_GetProperties(aer)
 if(NOT aer_POPULATED)
-    FetchContent_Populate(aer) # Emply of populate to avoid the compilation of wrappers
+    FetchContent_Populate(aer) 
 endif()
 
 add_library(aer_headers INTERFACE)
 target_include_directories(aer_headers INTERFACE "${aer_SOURCE_DIR}/src" "${Python_INCLUDE_DIRS}")
 if(OpenMP_FOUND)
   target_link_libraries(aer_headers INTERFACE OpenMP::OpenMP_CXX)
-  message(STATUS "Linked OpenMP to aer-cpp")
 endif()
 if(pybind11_FOUND)
   target_link_libraries(aer_headers INTERFACE pybind11::headers)
-  message(STATUS "Linked pybind aer-cpp")
 endif()
 
 #  Restore original compiler flags
 set(CMAKE_CXX_FLAGS "${_old_CXX_FLAGS}")
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/utils/logger" "${CMAKE_CURRENT_SOURCE_DIR}/src")
-#include_directories("${Python_INCLUDE_DIRS}" "${MPI_INCLUDE_PATH}")
 
 add_subdirectory(src)
 add_subdirectory(cunqa)
