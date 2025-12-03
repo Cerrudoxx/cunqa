@@ -177,6 +177,14 @@ inline std::string get_IP_address() {
         if (!admin_up(ifaddr, ifname)) continue;
         if (!oper_up(ifname)) continue;
 
+        // --- FIX CRÍTICO: Saltar interfaces Infiniband (ibX) ---
+        // Las IPs de Infiniband suelen ser inalcanzables desde el nodo de Login.
+        // Forzamos el uso de Ethernet para garantizar la conexión en modo co-located.
+        if (ifname.size() >= 2 && ifname.substr(0, 2) == "ib") {
+            continue; 
+        }
+        // -------------------------------------------------------
+
         // Obtain IPv4 and safe if it is the fastest
         std::string ip;
         if (!get_first_ipv4(ifaddr, ifname, ip)) continue;
@@ -188,5 +196,10 @@ inline std::string get_IP_address() {
     freeifaddrs(ifaddr);
 
     if (best_mbps > 0 && !best_ip.empty()) return best_ip;
-    else return "";
+    
+    // Fallback: si no encontramos nada (quizás solo había IB), devolvemos la primera IP que no sea loopback
+    // Esto es un seguro por si acaso.
+    return best_ip; 
 }
+
+

@@ -41,7 +41,6 @@ void write_sbatch_header(std::ofstream& sbatchFile, const CunqaArgs& args)
     
     if(args.partition.has_value())
         sbatchFile << "#SBATCH --partition=" << args.partition.value() << "\n";
-	//printf("ESCRIBIENDO: particion en sbatch");
 
     if (args.qpus_per_node.has_value()) {
         if (args.n_qpus < args.qpus_per_node) {
@@ -114,6 +113,15 @@ void write_sbatch_header(std::ofstream& sbatchFile, const CunqaArgs& args)
 
     sbatchFile << "#SBATCH --output=qraise_%j\n\n";
     sbatchFile << "unset SLURM_MEM_PER_CPU SLURM_CPU_BIND_LIST SLURM_CPU_BIND\n";
+    
+    // --- CORRECCIONES DE SEGURIDAD PARA LUSI2 ---
+    // 1. Forzar a OpenBLAS a usar arquitectura segura (Sandybridge) para evitar Illegal Instruction
+    sbatchFile << "export OPENBLAS_CORETYPE=Sandybridge\n";
+    // 2. Evitar sobrecarga de hilos (hanging) limitando OpenBLAS/OpenMP a 1 hilo por defecto
+    sbatchFile << "export OMP_NUM_THREADS=1\n";
+    sbatchFile << "export OPENBLAS_NUM_THREADS=1\n";
+    // ---------------------------------------------
+
     sbatchFile << "EPILOG_PATH=" << std::string(constants::CUNQA_PATH) << "/epilog.sh\n";
 }
 
@@ -137,7 +145,8 @@ void write_run_command(std::ofstream& sbatchFile, const CunqaArgs& args, const s
         run_command = get_noise_model_run_command(args, mode);
 
 
-    } else if ((!args.noise_properties.has_value() || !args.fakeqmio.has_value()) && (args.no_thermal_relaxation || args.no_gate_error || args.no_readout_error)){
+    } else if ((!args.noise_properties.has_value() || !args.fakeqmio.has_value()) && (args.no_thermal_relaxation || args.no_gate_error || 
+args.no_readout_error)){
         LOGGER_ERROR("noise_properties flags where provided but --noise_properties nor --fakeqmio args were not included.");
         return;
 
@@ -198,3 +207,4 @@ int main(int argc, char* argv[])
     
     return 0;
 }
+
