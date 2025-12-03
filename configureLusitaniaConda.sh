@@ -7,7 +7,7 @@ fi
 
 echo "Configuring environment for LUSITANIA (Lusi2 Compat Mode + ccache)"
 
-module load gcc/gcc-11.2.0 cmake/cmake-3.23 openblas/openblas-0.3.24 openmpi/openmpi-4.1.2-gcc11.2.0 python/python-3.10 ccache
+module load gcc/gcc-11.2.0 cmake/cmake-3.23 openblas/openblas-0.3.24 openmpi/openmpi-4.1.2-gcc11.2.0 ccache
 
 #ccache -C
 #ccache -z # Reset stats
@@ -40,14 +40,14 @@ done
 
 rm -rf build/
 
-COMMON_FLAGS="-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DNATIVE_ARCH=OFF -DDDSIM_NATIVE_ARCH=OFF"
+COMMON_FLAGS="-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DNATIVE_ARCH=OFF -DDDSIM_NATIVE_ARCH=OFF -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE"
 
 if [ "$USE_NINJA" = true ]; then
   cmake -G Ninja -S . -B build/ $COMMON_FLAGS
-  ninja -C build -j $(nproc)
+  ninja -C build -j 1
   cmake --install build/
 else
   cmake -S . -B build/ $COMMON_FLAGS
-  time cmake --build build/ --parallel $(nproc)
+  time cmake --build build/ --parallel 1
   cmake --install build/
 fi
