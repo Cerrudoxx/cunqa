@@ -167,7 +167,7 @@ Cunqa is available as Lmod module in CESGA. To use it all you have to do is:
 
 If your HPC center is interested in using it this way, EasyBuild files employed to install it in CESGA are available inside `easybuild/` folder.
 
-## Installation on a Python Environment
+## Installation on a Python Environment (LUSITANIA)
 
 Creation of the environment and installation of the pybind11 package:
 
@@ -197,6 +197,42 @@ Execute the installation script for Lusitania passing it the installation route 
 ```bash
 source configureLusitania.sh $HOME
 ```
+
+## Installation on Conda Environment (LUSITANIA)
+WIP: This installation method is still under development and testing.
+
+First, load the anaconda module and initialize it:
+```bash
+module load anaconda
+source /lusitania_apps/anaconda/anaconda3-2023.09/anaconda_init
+```
+Clone the current branch of the repository:
+```bash
+git clone -b cunqa-ex git@github.com:Cerrudoxx/cunqa.git
+```
+
+Enter the cloned repository:
+
+```bash
+cd cunqa
+```
+
+Create the conda environment from the provided condaenv.yml file:
+```bash
+conda env create -f condaenv.yml
+```
+
+Changes permission to execute the installation script:
+```bash
+chmod +x configureLusitania_conda.sh
+```
+
+Execute the installation script for Lusitania passing it the installation route as an argument(`$HOME` in our case):
+```bash
+source configureLusitania_conda.sh $HOME
+```
+
+It is important to mention that this installation method is designed for the Lusitania supercomputer and is still under development and testing, so some issues may arise during the installation or execution of CUNQA. 
 
 ## Uninstall
 There has also been developed a Make directive to uninstall CUNQA if needed: 
