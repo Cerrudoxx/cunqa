@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
     }
 
     std::system("sbatch qraise_sbatch_tmp.sbatch");
-    // std::system("rm qraise_sbatch_tmp.sbatch");
+    std::system("rm qraise_sbatch_tmp.sbatch");
     
     return 0;
 }
