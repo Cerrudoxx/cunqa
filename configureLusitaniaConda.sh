@@ -7,7 +7,7 @@ fi
 
 echo "Configuring environment for LUSITANIA (Lusi2 Compat Mode + ccache)"
 
-module load gcc/gcc-11.2.0 cmake/cmake-3.23 openblas/openblas-0.3.24 openmpi/openmpi-4.1.2-gcc11.2.0 ccache
+module load gcc/gcc-11.2.0 cmake/cmake-3.23 openmpi/openmpi-4.1.2-gcc11.2.0 ccache
 
 #ccache -C
 #ccache -z # Reset stats
