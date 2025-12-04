@@ -169,6 +169,34 @@ Cunqa is available as Lmod module in CESGA. To use it all you have to do is:
 
 If your HPC center is interested in using it this way, EasyBuild files employed to install it in CESGA are available inside `easybuild/` folder.
 
+## Installation on LUSITANIA
+LUSITANIA is a suporcomputer managed by COMPUTAEX. To install CUNQA in LUSITANIA there are currently three methods available:
+1. Installation directly onto the login node.
+2. Installation in a Python virtual environment. 
+3. Installation in a Conda environment (WIP).
+
+We are working on making CUNQA available as an module in LUSITANIA.
+
+## Installation directly onto the login node (LUSITANIA)
+Cloning the github repository:
+```bash
+git clone -b cunqa-ex git@github.com:Cerrudoxx/cunqa.git
+```
+
+Get into the cloned cunqa directory:
+```bash
+cd cunqa
+``` 
+
+Execute the installation script for Lusitania passing it the installation route as an argument(`$HOME` in our case):
+```bash
+source configureLusitania.sh $HOME
+```
+You can specify the --ninja flag to use Ninja as the build system:
+```bash
+source configureLusitania.sh $HOME --ninja
+```
+
 ## Installation on a Python Environment (LUSITANIA)
 
 Creation of the environment and installation of the pybind11 package:
@@ -226,12 +254,12 @@ conda env create -f condaenv.yml
 
 Changes permission to execute the installation script:
 ```bash
-chmod +x configureLusitania_conda.sh
+chmod +x configureLusitaniaConda.sh
 ```
 
 Execute the installation script for Lusitania passing it the installation route as an argument(`$HOME` in our case):
 ```bash
-source configureLusitania_conda.sh $HOME
+source configureLusitaniaConda.sh $HOME
 ```
 
 It is important to mention that this installation method is designed for the Lusitania supercomputer and is still under development and testing, so some issues may arise during the installation or execution of CUNQA. 
