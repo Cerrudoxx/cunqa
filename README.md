@@ -69,6 +69,8 @@
     - [Dependencies](#dependencies)
     - [Configure, build and install](#configure-build-and-install)
     - [Install as Lmod module](#install-as-lmod-module)
+    - [Installation on a Python Environment (LUSITANIA)](#installation-on-a-python-environment-lusitania)
+    - [Installation on Conda Environment (LUSITANIA)](#installation-on-conda-environment-lusitania)
   - [UNINSTALL](#uninstall)
   - [RUN YOUR FIRST DISTRIBUTED PROGRAM](#run-your-first-distributed-program)
     1. [`qraise`command](#1-qraisecommand)
