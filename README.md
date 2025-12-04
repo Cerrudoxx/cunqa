@@ -167,6 +167,37 @@ Cunqa is available as Lmod module in CESGA. To use it all you have to do is:
 
 If your HPC center is interested in using it this way, EasyBuild files employed to install it in CESGA are available inside `easybuild/` folder.
 
+## Installation on a Python Environment
+
+Creation of the environment and installation of the pybind11 package:
+
+```bash
+python -m venv cunqenv
+source cunqenv/bin/activate
+pip install pybind11
+```
+
+Creation of the directory where we will install cunqa:
+```bash
+mkdir cunqa_env
+cd cunqa_env
+```
+
+Cloning the github repository:
+```bash
+git clone -b cunqa-ex git@github.com:Cerrudoxx/cunqa.git
+```
+
+Get into the cunqa directory created before cloning the repository:
+```bash
+cd cunqa
+```
+
+Execute the installation script for Lusitania passing it the installation route as an argument(`$HOME` in our case):
+```bash
+source configureLusitania.sh $HOME
+```
+
 ## Uninstall
 There has also been developed a Make directive to uninstall CUNQA if needed: 
 
