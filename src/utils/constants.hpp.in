@@ -4,17 +4,26 @@
 #include <complex>
 #include <unordered_map>
 #include <string_view>
+#include <string>
+#include <cstdlib> // Necesario para std::getenv
 
 namespace cunqa {
 namespace constants{
 
-// This is constexpr because it is employed in __attribute__((constructor))
-// of the logger_client, that is initialized before main (therefore before
-// const std::string variables are initialized) 
-inline constexpr std::string_view CUNQA_PATH = "@CUNQA_PATH@";
-const std::string QPUS_FILEPATH = "@QPUS_FILEPATH@";
-const std::string COMM_FILEPATH = "@COMM_FILEPATH@";
-const std::string INSTALL_PATH = "@CMAKE_INSTALL_PREFIX@";
+inline constexpr std::string_view CUNQA_PATH = "@CUNQA_FULL_DATA_PATH@";
+inline constexpr std::string_view INSTALL_PATH = "@CMAKE_INSTALL_PREFIX@";
+
+const std::string QPUS_FILEPATH = []() -> std::string {
+    const char* home_env = std::getenv("HOME");
+    std::string home = home_env ? std::string(home_env) : ".";
+    return home + "/.cunqa/qpus.json";
+}();
+
+const std::string COMM_FILEPATH = []() -> std::string {
+    const char* home_env = std::getenv("HOME");
+    std::string home = home_env ? std::string(home_env) : ".";
+    return home + "/.cunqa/communications.json";
+}();
 
 
 enum INSTRUCTIONS {
@@ -138,7 +147,9 @@ const std::vector<std::string> BASIS_GATES = {
 };
 
 const std::vector<std::string> BASIS_AND_DISTRIBUTED_GATES = {
-    "id", "x", "y", "z", "h", "sx", "cx", "cy", "cz", "ecr", "c_if_x","c_if_y","c_if_z", "c_if_h", "c_if_sx", "c_if_rx","c_if_ry","c_if_rz","c_if_cx","c_if_cy","c_if_cz", "measure_and_send", "remote_c_if_x","remote_c_if_y","remote_c_if_z", "remote_c_if_h", "remote_c_if_sx", "remote_c_if_rx","remote_c_if_ry","remote_c_if_rz","remote_c_if_cx","remote_c_if_cy","remote_c_if_cz", "remote_c_if_ecr"
+    "id", "x", "y", "z", "h", "sx", "cx", "cy", "cz", "ecr", "c_if_x","c_if_y","c_if_z", "c_if_h", "c_if_sx", 
+"c_if_rx","c_if_ry","c_if_rz","c_if_cx","c_if_cy","c_if_cz", "measure_and_send", "remote_c_if_x","remote_c_if_y","remote_c_if_z", "remote_c_if_h", 
+"remote_c_if_sx", "remote_c_if_rx","remote_c_if_ry","remote_c_if_rz","remote_c_if_cx","remote_c_if_cy","remote_c_if_cz", "remote_c_if_ecr"
 };
 
 const std::unordered_map<std::string, std::string> CORRESPONDENCE_REMOTE_GATE_MAP = {
@@ -156,12 +167,8 @@ const std::unordered_map<std::string, std::string> CORRESPONDENCE_REMOTE_GATE_MA
     {"remote_c_if_ecr", "ecr"},
 };
 
-} // End namespace constants
-} //End namespace cunqa
-
-
-
-
+} // end namespace constants
+} //end namespace cunqa
 
 const std::string cafe = R"(                                                                                                
                                                             ##*%                                                                                                

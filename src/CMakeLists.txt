@@ -12,13 +12,14 @@ add_subdirectory(backends)
 add_subdirectory(comm)
 
 add_library(quantum_task quantum_task.cpp)
-target_link_libraries(quantum_task PUBLIC json
+target_link_libraries(quantum_task PUBLIC nlohmann_json::nlohmann_json
                                    PRIVATE logger_qpu)
 
 add_library(qpu qpu.cpp)
 target_link_libraries(qpu PUBLIC server 
-                          PRIVATE json quantum_task logger_qpu)
+                          PRIVATE nlohmann_json::nlohmann_json quantum_task logger_qpu)
 
 add_subdirectory(cli)
 
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/utils/json_schema" DESTINATION "$ENV{STORE}/.cunqa")
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/utils/json_schema" 
+        DESTINATION "${CUNQA_DATA_DIR}")

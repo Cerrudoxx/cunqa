@@ -1,12 +1,22 @@
 #!/bin/bash
 
-erase_key $SLURM_JOB_ID "@QPUS_FILEPATH@"
+ERASE_KEY_BIN="@CMAKE_INSTALL_PREFIX@/bin/erase_key"
 
-if compgen -G "@COMM_FILEPATH@" > /dev/null; then
-    erase_key $SLURM_JOB_ID "@COMM_FILEPATH@"
+USER_CUNQA_DIR="$HOME/.cunqa"
+
+QPUS_FILE="$USER_CUNQA_DIR/qpus.json"
+COMM_FILE="$USER_CUNQA_DIR/communications.json"
+
+if [ -f "$QPUS_FILE" ]; then
+    "$ERASE_KEY_BIN" "$SLURM_JOB_ID" "$QPUS_FILE"
 fi
 
-if compgen -G "@CUNQA_PATH@/tmp_noisy_backend_$SLURM_JOB_ID.json" > /dev/null; then
-    rm "@CUNQA_PATH@/tmp_noisy_backend_$SLURM_JOB_ID.json"
+if [ -f "$COMM_FILE" ]; then
+    "$ERASE_KEY_BIN" "$SLURM_JOB_ID" "$COMM_FILE"
 fi
 
+NOISY_FILE="$USER_CUNQA_DIR/tmp_noisy_backend_$SLURM_JOB_ID.json"
+
+if [ -f "$NOISY_FILE" ]; then
+    rm "$NOISY_FILE"
+fi

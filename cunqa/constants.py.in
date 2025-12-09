@@ -1,2 +1,13 @@
-QPUS_FILEPATH = "@QPUS_FILEPATH@"
-CUNQA_PATH = "@CUNQA_PATH@"
+import os
+from pathlib import Path
+
+CUNQA_PATH = "@CUNQA_FULL_DATA_PATH@"
+
+_USER_HOME = Path.home()
+_CUNQA_USER_DIR = _USER_HOME / ".cunqa"
+
+# Definimos las rutas finales
+QPUS_FILEPATH = str(_CUNQA_USER_DIR / "qpus.json")
+
+# Nota: Si en el futuro Python necesita 'COMM_FILEPATH', se añadiría aquí igual:
+# COMM_FILEPATH = str(_CUNQA_USER_DIR / "communications.json")

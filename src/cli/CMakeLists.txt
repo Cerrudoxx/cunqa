@@ -37,7 +37,7 @@ install(TARGETS qinfo DESTINATION "${CMAKE_INSTALL_BINDIR}")
 
 # Epilog tool erase_key and noise models
 add_executable(erase_key erase_key.cpp)
-target_link_libraries(erase_key PRIVATE json)
+target_link_libraries(erase_key PRIVATE json nlohmann_json::nlohmann_json)
 install(TARGETS erase_key DESTINATION "${CMAKE_INSTALL_BINDIR}")
 
 configure_file(
@@ -45,6 +45,7 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/epilog.sh"
     @ONLY
 )
-install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/epilog.sh" DESTINATION "$ENV{STORE}/.cunqa") 
+
+install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/epilog.sh" DESTINATION "${CUNQA_DATA_DIR}")
 
 
