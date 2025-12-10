@@ -7,8 +7,14 @@ message(STATUS "Python modules will be installed to: ${CMAKE_INSTALL_PREFIX}/${C
 add_subdirectory(circuit)
 
 pybind11_add_module(qclient bindings.cpp)
-
 target_link_libraries(qclient PRIVATE client) 
+
+add_custom_command(TARGET qclient POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:qclient>
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+    COMMENT "Copoyando extension compilada qclient a la carpeta fuente para desarrollo local..."
+)
 
 install(TARGETS qclient DESTINATION "${CUNQA_PYTHON_INSTALL_DIR}")
 
