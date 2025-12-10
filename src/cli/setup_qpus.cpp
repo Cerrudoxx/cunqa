@@ -114,7 +114,7 @@ std::string generate_noise_instructions(JSON back_path_json, std::string& family
         LOGGER_DEBUG("No backend_path provided, defining backend from noise_properties.");
         backend_path = "default";
     }
-    std::string command("python "s + constants::INSTALL_PATH + "/cunqa/qiskit_deps/noise_instructions.py "s
+    std::string command("python "s + std::string(constants::INSTALL_PATH) + "/cunqa/qiskit_deps/noise_instructions.py "s
                                    + back_path_json.at("noise_properties_path").get<std::string>() + " "s
                                    + backend_path.c_str() + " "s
                                    + back_path_json.at("thermal_relaxation").get<std::string>() + " "s
