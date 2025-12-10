@@ -123,6 +123,7 @@ void write_sbatch_header(std::ofstream& sbatchFile, const CunqaArgs& args)
     // ---------------------------------------------
 
     sbatchFile << "EPILOG_PATH=" << std::string(constants::CUNQA_PATH) << "/epilog.sh\n";
+    sbatchFile << "mkdir -p $HOME/.cunqa\n";
 }
 
 void write_run_command(std::ofstream& sbatchFile, const CunqaArgs& args, const std::string& mode)
