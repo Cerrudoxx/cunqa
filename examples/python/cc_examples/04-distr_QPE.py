@@ -1,7 +1,9 @@
 """
-Code implementing the Iterative Quantum Phase Estimation (iQPE) algorithm with classical communications. To understand the algorithm without communications check:
+Code implementing the Iterative Quantum Phase Estimation (iQPE) algorithm with classical communications. To understand the algorithm without communications 
+check:
     - Original paper (here referred to as Iterative Phase Estimation Algorithm): https://arxiv.org/abs/quant-ph/0610214
-    - TalentQ explanation (in spanish): https://talentq-es.github.io/Fault-Tolerant-Algorithms/docs/Part_01_Fault-tolerant_Algorithms/Chapter_01_01_IPE_portada_myst.html
+    - TalentQ explanation (in spanish): 
+https://talentq-es.github.io/Fault-Tolerant-Algorithms/docs/Part_01_Fault-tolerant_Algorithms/Chapter_01_01_IPE_portada_myst.html
 """
 
 import os, sys
@@ -123,7 +125,8 @@ def QPE_rzxrz_circuits(angle, n_qpus):
         theta = 2**(n_qpus - i - 1) * angle
         #print(f"Theta: {theta}")
 
-        circuits[f"cc_{i}"] = CunqaCircuit(3,3, id= f"cc_{i}") #we set the same number of quantum and classical bits because Cunqasimulator requires all qubits to be measured for them to be represented on the counts
+        circuits[f"cc_{i}"] = CunqaCircuit(3,3, id= f"cc_{i}") #we set the same number of quantum and classical bits because Cunqasimulator requires all 
+qubits to be measured for them to be represented on the counts
         circuits[f"cc_{i}"].h(0)
         circuits[f"cc_{i}"].rx(np.pi, 1)
         circuits[f"cc_{i}"].rx(np.pi, 2)

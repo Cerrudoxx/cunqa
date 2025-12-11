@@ -103,7 +103,7 @@ void turn_ON_QPU(const JSON& backend_json, const std::string& mode, const std::s
     qpu.turn_ON();
 }
 
-std::string generate_noise_instructions(JSON back_path_json, std::string& family)
+std::string generate_noise_instructions(JSON back_path_json, std::string& family, const std::string& output_path)
 {
     std::string backend_path;
 
@@ -121,7 +121,8 @@ std::string generate_noise_instructions(JSON back_path_json, std::string& family
                                    + back_path_json.at("readout_error").get<std::string>() + " "s
                                    + back_path_json.at("gate_error").get<std::string>() + " "s
                                    + family.c_str() + " "s
-                                   + back_path_json.at("fakeqmio").get<std::string>());
+                                   + back_path_json.at("fakeqmio").get<std::string>() + " "s
+			           + output_path);
                                    
     LOGGER_DEBUG("Command: {}", command);
     std::system(command.c_str());
@@ -144,10 +145,13 @@ int main(int argc, char *argv[])
     JSON backend_json;
     std::string name = family + "_" + std::getenv("SLURM_PROCID");
     if (back_path_json.contains("noise_properties_path")) {
-        std::string fpath = std::string(constants::CUNQA_PATH) + "/tmp_noisy_backend_" + std::getenv("SLURM_JOB_ID") + ".json";
+      const char* home_env = std::getenv("HOME");
+        std::string home = home_env ? std::string(home_env) : ".";
+        
+        std::string fpath = home + "/.cunqa/tmp_noisy_backend_" + std::getenv("SLURM_JOB_ID") + ".json";
 
         if (std::getenv("SLURM_PROCID") && std::string(std::getenv("SLURM_PROCID")) == "0") {
-            generate_noise_instructions(back_path_json, family);
+            generate_noise_instructions(back_path_json, family, fpath);
             LOGGER_DEBUG("Correctly created tmp noise intructions file.");
         } else {
             int fd = open(fpath.c_str(), O_RDONLY);

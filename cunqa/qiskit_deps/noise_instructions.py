@@ -30,6 +30,7 @@ parser.add_argument("readout_error", type = int, help = "Weather thermal relaxat
 parser.add_argument("gate_error", type = int, help = "Weather thermal relaxation is added to FakeQmio")
 parser.add_argument("family_name", type = str, help = "family_name for QPUs")
 parser.add_argument("fakeqmio", type = int, help = "FakeQmio noise properties provided")
+parser.add_argument("output_path", type = str, help = "Path to save the noisy backend json")
 
 
 
@@ -127,7 +128,7 @@ if gate_error:
 
 description = description + ", ".join(errors.split())+"."
 
-tmp_file = "{}/tmp_noisy_backend_{}.json".format(CUNQA_PATH, SLURM_JOB_ID)
+tmp_file = args.output_path
 
 if args.backend_path == "default": # we have not read the backend_json and checked it, we generate it using CunqaBackend
 
