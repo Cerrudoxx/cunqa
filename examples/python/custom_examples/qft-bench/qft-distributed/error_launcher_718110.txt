@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/lusitania_apps/python/python-3.10-cunqa-ex/lib/python3.10/site-packages/cunqa/qutils.py", line 207, in qraise
+    state = run(cmd_getstate, capture_output=True, text=True, check=True).stdout.strip()
+  File "/lusitania_homes/CenitS/jesus.cerrudo/.conda/envs/cunqa-bench/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['squeue', '-h', '-j', '718111', '-o', '%T']' returned non-zero exit status 1.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/lustre/lusitania_homes/CenitS/jesus.cerrudo/module-cunqa/cunqa/examples/python/custom_examples/qft-bench/qft-distributed/cunqa_main.py", line 55, in main
+    family = qraise(
+  File "/lusitania_apps/python/python-3.10-cunqa-ex/lib/python3.10/site-packages/cunqa/qutils.py", line 229, in qraise
+    raise QRaiseError(f"Unable to raise requested QPUs [{error}].")
+cunqa.qutils.QRaiseError: Unable to raise requested QPUs [Command '['squeue', '-h', '-j', '718111', '-o', '%T']' returned non-zero exit status 1.].

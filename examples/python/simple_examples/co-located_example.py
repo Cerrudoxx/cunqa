@@ -5,6 +5,7 @@ import numpy as np
 sys.path.append(os.getenv("HOME"))
 
 from cunqa import get_QPUs, gather
+from cunqa.qutils import qraise, qdrop
 from cunqa.circuit import CunqaCircuit
 
 # --------------------------------------------------
@@ -12,7 +13,8 @@ from cunqa.circuit import CunqaCircuit
 # example: on_node = False. This allows to look for
 # QPUs out of the node where the work is executing.
 # --------------------------------------------------
-qpus  = get_QPUs(on_node=False)
+family = qraise(2, "00:10:00", co_located=True)
+qpus  = get_QPUs(on_node=False, family=family)
 
 
 for q in qpus:
@@ -46,3 +48,5 @@ results = gather(qjobs)
 for result in results:
     print("Result: ", result.counts)
     print("Time taken: ", result.time_taken)
+    
+qdrop(family)

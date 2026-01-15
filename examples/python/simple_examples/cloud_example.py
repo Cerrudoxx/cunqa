@@ -7,7 +7,7 @@ sys.path.append(os.getenv("HOME"))
 
 
 from cunqa import get_QPUs
-
+from cunqa.qutils import qraise, qdrop
 from cunqa.circuit import CunqaCircuit
 
 
@@ -22,7 +22,9 @@ from cunqa.circuit import CunqaCircuit
 
 # --------------------------------------------------
 
-qpus  = get_QPUs(on_node=False)
+family = qraise(2, "00:10:00", co_located = True)
+
+qpus  = get_QPUs(on_node=False, family=family)
 
 
 
@@ -51,3 +53,5 @@ time = qjob.time_taken
 
 
 print(f"Result: \n{counts}\n Time taken: {time} s.")
+
+qdrop(family)

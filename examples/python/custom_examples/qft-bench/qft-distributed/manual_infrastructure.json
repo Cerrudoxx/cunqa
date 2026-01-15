@@ -1,0 +1,6 @@
+{
+    "qpus": [
+        { "name": "QPU_A", "ip": "s01r2b07", "port": 8001 },
+        { "name": "QPU_B", "ip": "s01r2b08", "port": 8002 }
+    ]
+}

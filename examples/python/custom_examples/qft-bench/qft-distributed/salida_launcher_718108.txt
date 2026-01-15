@@ -1,0 +1,8 @@
+--- INICIANDO COORDINADOR ---
+
+>>> MODO DISTRIBUIDO: 40 Qubits Totales
+    - Reparto: 2 QPUs de ~20 qubits cada una.
+    - RAM Total Usada: ~2 x (RAM de 20 qubits).
+[33m	warning: [qutils.py] Be careful, you are deploying QPUs from an interactive session.
+[0m
+Command: qraise -n 2 -t 00:30:00 --cores=15 --mem-per-qpu=8G --n_nodes=2 --qpus_per_node=1 --partition=lusitania

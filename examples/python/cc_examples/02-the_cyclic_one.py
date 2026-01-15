@@ -1,6 +1,6 @@
 import os, sys
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 # path to access c++ files
 sys.path.append(os.getenv("HOME"))

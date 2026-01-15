@@ -125,8 +125,7 @@ def QPE_rzxrz_circuits(angle, n_qpus):
         theta = 2**(n_qpus - i - 1) * angle
         #print(f"Theta: {theta}")
 
-        circuits[f"cc_{i}"] = CunqaCircuit(3,3, id= f"cc_{i}") #we set the same number of quantum and classical bits because Cunqasimulator requires all 
-qubits to be measured for them to be represented on the counts
+        circuits[f"cc_{i}"] = CunqaCircuit(3,3, id= f"cc_{i}") #we set the same number of quantum and classical bits because Cunqasimulator requires all qubits to be measured for them to be represented on the counts
         circuits[f"cc_{i}"].h(0)
         circuits[f"cc_{i}"].rx(np.pi, 1)
         circuits[f"cc_{i}"].rx(np.pi, 2)
@@ -204,7 +203,7 @@ def iqpe_benchmarking(angles_list, n_qpus_list, shots, cores_per_qpu, mem_per_qp
             }
             
             str_data =str(dict_data)
-            with open(f"results_iterative_QPE/iQPE_results.txt", "a") as f:
+            with open(f"./examples/python/cc_examples/results_iterative_QPE/iQPE_results.txt", "a") as f:
                 f.write(str_data)
 
             qdrop(qpus)
@@ -214,9 +213,9 @@ def iqpe_benchmarking(angles_list, n_qpus_list, shots, cores_per_qpu, mem_per_qp
 if __name__ == "__main__":
     angles_list = [1/2**10, 1/np.pi]
     n_qpus = [16]
-    shots = 1e6
-    cores_per_qpu = 4
-    mem_per_qpu = 60 # en GB
+    shots = 1000
+    cores_per_qpu = 1
+    mem_per_qpu = 1 # en GB
     seed = 13
 
     iqpe_benchmarking(angles_list, n_qpus, shots, cores_per_qpu, mem_per_qpu, seed)
