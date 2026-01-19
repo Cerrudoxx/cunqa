@@ -8,7 +8,6 @@ https://talentq-es.github.io/Fault-Tolerant-Algorithms/docs/Part_01_Fault-tolera
 
 import os, sys
 import math
-import math
 import numpy as np
 import time
 import statistics as st

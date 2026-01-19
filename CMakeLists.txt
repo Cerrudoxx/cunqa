@@ -84,7 +84,7 @@ function(find_or_fetch_package PACKAGE_NAME GIT_REPOSITORY VERSION TAG)
     )
     FetchContent_MakeAvailable(${PACKAGE_NAME})
   else()
-    message(STATUS "Found package ${PACKAGE_NAME}")
+    message(STATUS "Found package ${PACKAGE_NAME}: ${PACKAGE_NAME}_DIR = ${${PACKAGE_NAME}_DIR}")
   endif()
 endfunction()
 
@@ -184,6 +184,129 @@ endif()
 if(pybind11_FOUND)
   target_link_libraries(aer_headers INTERFACE pybind11::headers)
 endif()
+
+# =====================================================================
+#  DEPENDENCIAS ADICIONALES (Maestro, PyZMQ, Qulacs)
+# =====================================================================
+
+include(GNUInstallDirs) # Necesario para CMAKE_INSTALL_LIBDIR
+
+# -- PyZMQ -----------------------------------------------------------
+# Nota: Si libzmq se construye en este proyecto, descomenta la siguiente línea:
+# set(ZMQ_PREFIX "${libzmq_BINARY_DIR}" CACHE PATH "ZMQ_PREFIX" FORCE)
+
+# Opcional: Configurar RPATH si es necesario para el linking dinámico
+# set(LDFLAGS "-Wl,-rpath,${ZMQ_PREFIX}/lib")
+
+FetchContent_Declare(
+    pyzmq
+    GIT_REPOSITORY "git@github.com:zeromq/pyzmq.git"
+    GIT_TAG        "main"
+)
+FetchContent_MakeAvailable(pyzmq)
+
+# Instalación de headers y binarios de PyZMQ
+if(EXISTS "${pyzmq_SOURCE_DIR}/zmq/")
+    install(DIRECTORY  "${pyzmq_SOURCE_DIR}/zmq/" DESTINATION "${CMAKE_INSTALL_LIBDIR}/zmq")
+endif()
+
+if(TARGET _zmq)
+    install(TARGETS "_zmq" DESTINATION "${CMAKE_INSTALL_LIBDIR}/zmq/backend/cython")
+endif()
+
+
+# -- Maestro Dependencies ---------------------------------------------
+
+# 1. Eigen3 (Maestro espera la variable EIGEN5_INCLUDE_DIR)
+find_package(Eigen3 QUIET)
+if(NOT Eigen3_FOUND)
+  message(STATUS "Eigen3 not found, fetching from gitlab...")
+  FetchContent_Declare(
+      MaestroEigen
+      GIT_REPOSITORY "https://gitlab.com/libeigen/eigen.git"
+      GIT_TAG        "bc3b39870ecb690a623a3f49149a358b95c5781d"
+  )
+  FetchContent_GetProperties(MaestroEigen)
+  if(NOT maestroeigen_POPULATED)
+      FetchContent_Populate(MaestroEigen)
+  endif()
+  set(EIGEN5_INCLUDE_DIR "${maestroeigen_SOURCE_DIR}") 
+else()
+  message(STATUS "Eigen3 found")
+  # Usamos la ruta encontrada por find_package
+  set(EIGEN5_INCLUDE_DIR "${EIGEN3_INCLUDE_DIR}") 
+endif()
+
+# 2. JSON (Nlohmann)
+# Asumimos que CUNQA ya carga nlohmann_json. Si no, habría que hacer un fetch aquí.
+if(TARGET nlohmann_json::nlohmann_json)
+    get_target_property(
+        JSON_INCLUDE_DIR 
+        nlohmann_json::nlohmann_json 
+        INTERFACE_INCLUDE_DIRECTORIES
+    )
+else()
+    message(WARNING "Target nlohmann_json::nlohmann_json no encontrado. Maestro podría fallar si lo necesita.")
+endif()
+
+# 3. QCSim
+FetchContent_Declare(
+    qcsim
+    GIT_REPOSITORY "git@github.com:aromanro/QCSim.git"
+    GIT_TAG "5a458c8b4bddfbbe445de09376b366a97d474266"
+)
+FetchContent_GetProperties(qcsim)
+if(NOT qcsim_POPULATED)
+    FetchContent_Populate(qcsim)
+endif()
+set(QCSIM_INCLUDE_DIR "${qcsim_SOURCE_DIR}/QCSim")
+
+# 4. Maestro-AER (Fork de Aer para Maestro)
+# Nota: Esto es distinto al "aer" que ya tienes en CUNQA. Son independientes.
+FetchContent_Declare(
+    maestro-aer
+    GIT_REPOSITORY "git@github.com:InvictusWingsSRL/qiskit-aer.git"
+    GIT_TAG "96e82fdd1c8c1b17d749863ee5095262372e0d7e"
+)
+FetchContent_GetProperties(maestro-aer)
+if(NOT maestro-aer_POPULATED)
+    FetchContent_Populate(maestro-aer)
+endif()
+set(AER_INCLUDE_DIR "${maestro-aer_SOURCE_DIR}/src")
+
+
+# -- Maestro ----------------------------------------------------------
+
+FetchContent_Declare(
+    maestro
+    GIT_REPOSITORY "git@github.com:QoroQuantum/maestro.git"
+    GIT_TAG "7ba339fc5595fd18d2fcb0612a6570c3c5e1fd90"
+)
+FetchContent_MakeAvailable(maestro)
+
+# Exponer includes e instalar
+target_include_directories(maestro PUBLIC "${maestro_SOURCE_DIR}")
+install(TARGETS maestro DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+
+
+# -- Qulacs (Fujitsu Simulator Fork) ----------------------------------
+
+FetchContent_Declare(
+    qulacs
+    GIT_REPOSITORY "git@github.com:usendon/usendon_qulacs.git"
+    GIT_TAG "228f617b9e31007b54488f467c031ebbf07efcdb"
+)
+
+# Configuración específica para Qulacs
+set(USE_PYTHON OFF CACHE BOOL "Disable Qulacs Python bindings" FORCE)
+set(BUILD_QULACS_WITH_MPI OFF)
+
+if(BUILD_QULACS_WITH_MPI)
+  # set(CXX_COMPILER "mpic++" CACHE STRING "" FORCE) # Cuidado al forzar compiladores
+  set(USE_MPI ON CACHE BOOL "Enable MPI for Qulacs" FORCE)
+endif()
+
+FetchContent_MakeAvailable(qulacs)
 
 # Restaurar flags originales
 set(CMAKE_CXX_FLAGS "${_old_CXX_FLAGS}")

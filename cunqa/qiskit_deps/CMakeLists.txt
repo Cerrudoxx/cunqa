@@ -1,0 +1,4 @@
+file(GLOB QISKIT_DEPS_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
+
+# USAR LA VARIABLE DEL PADRE PARA QUE CAIGA EN SITE-PACKAGES (esto es un cambio respecto a la versión original de Cesga)
+install(FILES ${QISKIT_DEPS_SCRIPTS} DESTINATION "${CUNQA_PYTHON_INSTALL_DIR}/qiskit_deps")

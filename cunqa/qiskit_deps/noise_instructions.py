@@ -8,11 +8,48 @@ import fcntl
 # this is due to the employment of this file in the C++ field, where
 # putting the cunqa package directory in the PATH is not the responsibility
 # of the user 
-sys.path.append("..")  
+#sys.path.append("..")  
+sys.path.append(os.getenv("HOME"))
+
+#### POSIBLE CORRECCIÓN SI FALLA HOME:
+# import os
+# import sys
+# import glob
+# import argparse
+# import json
+# import fcntl
+
+# # --- GESTIÓN DE IMPORTACIONES ROBUSTA ---
+# # Intentamos importar cunqa de forma normal.
+# # Si falla, significa que no estamos en el entorno instalado, 
+# # así que intentamos añadir la ruta relativa para desarrollo.
+
+# try:
+#     from cunqa.constants import CUNQA_PATH
+#     from cunqa.logger import logger
+#     # Importación absoluta recomendada
+#     from cunqa.qiskit_deps.cunqabackend import CunqaBackend 
+# except ImportError:
+#     # Fallback para desarrollo o ejecución aislada
+#     # Añadimos la raíz del proyecto (2 niveles arriba: ../..)
+#     current_dir = os.path.dirname(os.path.abspath(__file__))
+#     project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
+#     if project_root not in sys.path:
+#         sys.path.insert(0, project_root)
+    
+#     from cunqa.constants import CUNQA_PATH
+#     from cunqa.logger import logger
+#     # En desarrollo local, a veces cunqabackend está al lado
+#     try:
+#         from cunqa.qiskit_deps.cunqabackend import CunqaBackend
+#     except ImportError:
+#         from cunqabackend import CunqaBackend
+
+# from qiskit_aer.noise import NoiseModel
 
 from cunqa.constants import CUNQA_PATH
 from cunqa.logger import logger
-from cunqabackend import CunqaBackend
+from cunqa.qiskit_deps.cunqabackend import CunqaBackend
 from qiskit_aer.noise import NoiseModel
 
 SLURM_JOB_ID = os.getenv("SLURM_JOB_ID")

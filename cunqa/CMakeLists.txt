@@ -5,9 +5,12 @@ endif()
 message(STATUS "Python modules will be installed to: ${CMAKE_INSTALL_PREFIX}/${CUNQA_PYTHON_INSTALL_DIR}")
 
 add_subdirectory(circuit)
+add_subdirectory(qiskit_deps)  # Nuevo del diff
+add_subdirectory(real_qpus)    # Nuevo del diff
 
 pybind11_add_module(qclient bindings.cpp)
 target_link_libraries(qclient PRIVATE client) 
+target_include_directories(qclient PRIVATE "${CMAKE_SOURCE_DIR}/src/utils") #nuevo del diff
 
 add_custom_command(TARGET qclient POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different

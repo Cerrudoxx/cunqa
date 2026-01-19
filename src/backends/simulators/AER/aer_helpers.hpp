@@ -6,7 +6,6 @@
 #include <chrono>
 #include <vector>
 
-#include "utils/helpers/reverse_bitstring.hpp"
 
 #include "logger.hpp"
 

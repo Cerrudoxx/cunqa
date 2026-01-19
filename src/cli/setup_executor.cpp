@@ -5,9 +5,12 @@
 #include <string>
 
 #include "qpu.hpp"
+#include "backends/simulators/CUNQA/cunqa_executor.hpp"
 #include "backends/simulators/AER/aer_executor.hpp"
 #include "backends/simulators/Munich/munich_executor.hpp"
-#include "backends/simulators/CUNQA/cunqa_executor.hpp"
+
+#include "backends/simulators/Maestro/maestro_executor.hpp"
+#include "backends/simulators/Qulacs/qulacs_executor.hpp"
 
 
 #include "utils/json.hpp"
@@ -52,6 +55,20 @@ int main(int argc, char *argv[])
         {
             LOGGER_DEBUG("Raising executor with Cunqa.");
             CunqaExecutor executor(family_name);
+            executor.run();
+            break;
+        }
+        case murmur::hash("Maestro"):
+        {
+            LOGGER_DEBUG("Raising executor with Maestro.");
+            MaestroExecutor executor(family_name);
+            executor.run();
+            break;
+        }
+        case murmur::hash("Qulacs"):
+        {
+            LOGGER_DEBUG("Raising executor with Qulacs.");
+            QulacsExecutor executor(family_name);
             executor.run();
             break;
         }

@@ -1,8 +1,10 @@
 import os
 import sys
 import glob
+import json
 
 from ..logger import logger
+from ..backend import Backend
 
 from qiskit.providers import BackendV2
 from qiskit.providers import QubitProperties, BackendV2, Options
@@ -15,10 +17,37 @@ from qiskit.circuit import Parameter
 
 class CunqaBackend(BackendV2):
 
-    def __init__(self, noise_properties_json, backend_json=None, **kwargs):
+    def __init__(self, noise_properties_json = None, backend = None, **kwargs):
 
-        super().__init__(self,name="cunqa", description="backend for cunqa", **kwargs)
+        if noise_properties_json is not None:
 
+            super().__init__(self,name="cunqa", description="backend for cunqa", **kwargs)
+
+            self._from_noise_properties(noise_properties_json)
+
+        elif isinstance(backend, Backend):
+
+                # instanciating base BackendV2
+                super().__init__(self,
+                                 name = backend.name,
+                                 description = backend.description)
+
+                # non-ideal backend, we get to gather noise_properties
+                if backend.noise_properties_path and backend.noise_properties_path.strip():
+
+                    with open(backend.noise_properties_path, "r") as file:
+                        noise_properties_json = json.load(file)
+
+                    self._from_noise_properties(noise_properties_json)
+
+                # ideal backend, we do not gather any noise_properties, so ideal target is built.
+                else:
+
+                    self._from_backend_json(backend_json=backend.__dict__)
+
+
+    def _from_noise_properties(self, noise_properties_json):
+        
         # loading qubit noise_properties and readout errors
         qubits= noise_properties_json["Qubits"]
 
@@ -141,6 +170,43 @@ class CunqaBackend(BackendV2):
 
         self._target = target
 
+    def _from_backend_json(self, backend_json):
+
+        target = Target(num_qubits = backend_json["n_qubits"])
+
+        if len(backend_json["coupling_map"]) == 0:
+            coupling_map = []
+            for i in range(backend_json["n_qubits"]):
+                for j in range(backend_json["n_qubits"]):
+                    if i != j:
+                        coupling_map.append([i,j])
+
+                    for k in range(backend_json["n_qubits"]):
+                        if k != j and k != i:
+                            coupling_map.append([i,j,k])
+        else:
+            coupling_map = backend_json["coupling_map"]
+
+        target.add_instruction(Measure(), { (q,): None for q in range(backend_json["n_qubits"]) })
+
+        for gate in backend_json["basis_gates"]:
+
+            gate_object = _get_gate(gate)
+
+            if gate_object.num_qubits > 1:
+
+                inst_map = { tuple(couple): None for couple in coupling_map if len(couple) == gate_object.num_qubits}
+
+            else:
+                inst_map = { (q,): None for q in range(backend_json["n_qubits"]) }
+
+            target.add_instruction(gate_object, inst_map)
+
+        self._target = target
+
+
+
+
     @classmethod
     def _default_options(cls):
         return Options()
@@ -189,7 +255,7 @@ def _get_qubits_indexes(qubits_str):
 
 from qiskit.circuit.library.standard_gates import (U1Gate, U2Gate, U3Gate, CU1Gate, CU3Gate, UGate, CUGate, PhaseGate, RGate, RXGate, RYGate, RZGate, ECRGate,
                                                    CRXGate, CRYGate, CRZGate, IGate, XGate, YGate, ZGate, HGate, SGate, SdgGate, SXGate, SXdgGate, TGate, TdgGate,
-                                                   SwapGate, CXGate, CYGate, CZGate, CSXGate, CSwapGate, CCXGate, CCZGate, RXXGate, RYYGate, RZZGate, RZXGate)
+                                                   SwapGate, CXGate, CYGate, CZGate, CSXGate, CSwapGate, CCXGate, CCZGate, CPhaseGate, RXXGate, RYYGate, RZZGate, RZXGate)
 
 def _get_gate(name: str):
 
@@ -200,9 +266,9 @@ def _get_gate(name: str):
     }
 
     param_gate_map = {
-        "u1":  (U1Gate, 1), "u2":  (U2Gate, 2),"u3":  (U3Gate, 3), "cu1": (CU1Gate, 1), "cu3": (CU3Gate, 3), "u":   (UGate, 3), "cu":  (CUGate, 3), "p":   (PhaseGate, 1),  # u1(λ) se mapea a PhaseGate(λ)
+        "u1":  (U1Gate, 1), "u2":  (U2Gate, 2),"u3":  (U3Gate, 3), "cu1": (CU1Gate, 1), "cu3": (CU3Gate, 3), "u":   (UGate, 3), "cu":  (CUGate, 4), "p":   (PhaseGate, 1),  # u1(λ) se mapea a PhaseGate(λ)
         "r":   (RGate, 2), "rx":  (RXGate, 1), "ry":  (RYGate, 1), "rz":  (RZGate, 1),  "crx": (CRXGate, 1), "cry": (CRYGate, 1), "crz": (CRZGate, 1),
-        "rxx": (RXXGate, 1), "ryy": (RYYGate, 1),"rzz": (RZZGate, 1),"rzx": (RZXGate, 1)
+        "rxx": (RXXGate, 1), "ryy": (RYYGate, 1),"rzz": (RZZGate, 1),"rzx": (RZXGate, 1), "cp": (CPhaseGate, 1)
     }
 
     gate_name = name.lower()
