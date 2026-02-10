@@ -1,0 +1,876 @@
+Configuring environment for LUSITANIA (Lusi2 Compat Mode + ccache)
+-- The CXX compiler identification is GNU 11.2.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /lusitania_apps/ccache/ccache-4.8.3/opt/bin/ccache - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- CMAKE BUILD TYPE: 
+-- C++ version 20 configured.
+-- Install location (Prefix): /lusitania_homes/CenitS/jesus.cerrudo
+-- CUNQA Data location: /lusitania_homes/CenitS/jesus.cerrudo/share/cunqa
+-- Found Python3: /lusitania_apps/python/python-3.10.6/bin/python3.10 (found version "3.10.6") found components: Interpreter Development Development.Module Development.Embed 
+-- Found Python: /lusitania_apps/python/python-3.10.6/bin/python3.10 (Version: 3.10.6)
+-- Performing Test HAS_FLTO_AUTO
+-- Performing Test HAS_FLTO_AUTO - Success
+-- Found pybind11: /lusitania_homes/CenitS/jesus.cerrudo/.local/lib/python3.10/site-packages/pybind11/include (found version "3.0.1")
+-- Found Pybind11: /lusitania_homes/CenitS/jesus.cerrudo/.local/lib/python3.10/site-packages/pybind11/share/cmake/pybind11 (Version: 3.0.1)
+-- Looking for C++ include pthread.h
+-- Looking for C++ include pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Found MPI_CXX: /lusitania_apps/ccache/ccache-4.8.3/opt/bin/ccache (found version "3.1") 
+-- Found MPI: TRUE (found version "3.1")  
+-- Found OpenMP_CXX: -fopenmp (found version "4.5") 
+-- Found OpenMP: TRUE (found version "4.5")  
+-- Looking for sgemm_
+-- Looking for sgemm_ - found
+-- Found BLAS: /lusitania_apps/openblas-0.3.24/lib/libopenblas.so  
+-- Looking for cheev_
+-- Looking for cheev_ - found
+-- Found LAPACK: /lusitania_apps/openblas-0.3.24/lib/libopenblas.so;/lusitania_apps/openblas-0.3.24/lib/libopenblas.so  
+-- Found Boost: /lusitania_apps/boost-1.78.0/lib/cmake/Boost-1.78.0/BoostConfig.cmake (found suitable version "1.78.0", minimum required is "1.75.0") found components: json serialization container 
+-- Package nlohmann_json not found, fetching from git@github.com:nlohmann/json.git
+-- Using the multi-header code from /lusitania_homes/CenitS/jesus.cerrudo/cunqa-latest/cunqa/build/_deps/nlohmann_json-src/include/
+-- Package spdlog not found, fetching from git@github.com:gabime/spdlog.git
+-- Build spdlog: 1.16.0
+-- Build type: Release
+-- Looking for fwrite_unlocked
+-- Looking for fwrite_unlocked - found
+-- Package mqt-ddsim not found, fetching from git@github.com:munich-quantum-toolkit/ddsim.git
+-- Compiler cache 'ccache' found and enabled
+-- Found project version 2.7.0 from git (full version: )
+-- Boost.Multiprecision: standalone mode ON
+-- Performing Test HAS_MTUNE_NATIVE
+-- Performing Test HAS_MTUNE_NATIVE - Success
+-- Performing Test HAS_MARCH_NATIVE
+-- Performing Test HAS_MARCH_NATIVE - Success
+-- Performing Test COMPILER_HAS_HIDDEN_VISIBILITY
+-- Performing Test COMPILER_HAS_HIDDEN_VISIBILITY - Success
+-- Performing Test COMPILER_HAS_HIDDEN_INLINE_VISIBILITY
+-- Performing Test COMPILER_HAS_HIDDEN_INLINE_VISIBILITY - Success
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR - Success
+-- CMAKE_ROOT: /lustre/lusitania_apps/cmake-3.23.0/share/cmake-3.23
+-- PROJECT_NAME: Taskflow
+-- CMAKE_HOST_SYSTEM: Linux-4.4.73-5-default
+-- CMAKE_BUILD_TYPE: Release
+-- CMAKE_CXX_COMPILER: /lusitania_apps/ccache/ccache-4.8.3/opt/bin/ccache
+-- CMAKE_CXX_COMPILER_ID: GNU
+-- CMAKE_CXX_COMPILER_VERSION: 11.2.0
+-- CMAKE_CXX_FLAGS:  -w
+-- CMAKE_CXX_STANDARD: 17
+-- CMAKE_CUDA_COMPILER: 
+-- CMAKE_CUDA_COMPILER_ID: 
+-- CMAKE_CUDA_COMPILER_VERSION: 
+-- CMAKE_CUDA_FLAGS: 
+-- CMAKE_MODULE_PATH: 
+-- CMAKE_CURRENT_SOURCE_DIR: /lusitania_homes/CenitS/jesus.cerrudo/cunqa-latest/cunqa/build/_deps/taskflow-src
+-- CMAKE_CURRENT_BINARY_DIR: /lusitania_homes/CenitS/jesus.cerrudo/cunqa-latest/cunqa/build/_deps/taskflow-build
+-- CMAKE_CURRENT_LIST_DIR: /lusitania_homes/CenitS/jesus.cerrudo/cunqa-latest/cunqa/build/_deps/taskflow-src
+-- CMAKE_EXE_LINKER_FLAGS: 
+-- CMAKE_INSTALL_PREFIX: /lusitania_homes/CenitS/jesus.cerrudo
+-- CMAKE_INSTALL_FULL_INCLUDEDIR: /lusitania_homes/CenitS/jesus.cerrudo/include
+-- CMAKE_INSTALL_FULL_LIBDIR: /lusitania_homes/CenitS/jesus.cerrudo/lib
+-- CMAKE_MODULE_PATH: 
+-- CMAKE_PREFIX_PATH: 
+-- TF_BUILD_BENCHMARKS: OFF
+-- TF_BUILD_PROFILER: OFF
+-- TF_BUILD_CUDA: OFF
+-- TF_BUILD_SYCL: OFF
+-- TF_BUILD_SYCL_BITCODE: 
+-- TF_BUILD_TESTS: OFF
+-- TF_BUILD_EXAMPLES: OFF
+-- TF_UTEST_DIR: /lusitania_homes/CenitS/jesus.cerrudo/cunqa-latest/cunqa/build/_deps/taskflow-src/unittests
+-- TF_EXAMPLE_DIR: /lusitania_homes/CenitS/jesus.cerrudo/cunqa-latest/cunqa/build/_deps/taskflow-src/examples
+-- TF_BENCHMARK_DIR: /lusitania_homes/CenitS/jesus.cerrudo/cunqa-latest/cunqa/build/_deps/taskflow-src/benchmarks
+-- TF_3RD_PARTY_DIR: /lusitania_homes/CenitS/jesus.cerrudo/cunqa-latest/cunqa/build/_deps/taskflow-src/3rd-party
+-- Package libzmq not found, fetching from git@github.com:zeromq/libzmq.git
+-- The C compiler identification is GNU 11.2.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /lusitania_apps/ccache/ccache-4.8.3/opt/bin/ccache - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detected ZMQ Version - 4.3.5
+-- Found PkgConfig: /usr/bin/pkg-config (found version "0.28") 
+-- Performing Test COMPILER_SUPPORTS_C11
+-- Performing Test COMPILER_SUPPORTS_C11 - Success
+-- Performing Test CXX_HAS_TAUT_WARNING
+-- Performing Test CXX_HAS_TAUT_WARNING - Success
+-- Performing Test CC_HAS_TAUT_WARNING
+-- Performing Test CC_HAS_TAUT_WARNING - Success
+-- Building draft classes and methods
+-- Using radix tree implementation to manage subscriptions
+-- Enable WebSocket transport
+-- Could NOT find GnuTLS (missing: GNUTLS_LIBRARY GNUTLS_INCLUDE_DIR) (Required is at least version "3.6.7")
+-- Using builtin sha1
+-- Checking for module 'libbsd'
+--   No package 'libbsd' found
+-- Looking for strlcpy
+-- Looking for strlcpy - not found
+-- Looking for kqueue
+-- Looking for kqueue - not found
+-- Looking for epoll_create
+-- Looking for epoll_create - found
+-- Looking for epoll_create1
+-- Looking for epoll_create1 - found
+-- Using polling method in I/O threads: epoll
+-- Using polling method in zmq_poll(er)_* API: poll
+-- Looking for pselect
+-- Looking for pselect - found
+-- Using 64 bytes alignment for lock-free data structures
+-- Looking for posix_memalign
+-- Looking for posix_memalign - found
+-- Looking for include file windows.h
+-- Looking for include file windows.h - not found
+-- Looking for include file condition_variable
+-- Looking for include file condition_variable - found
+-- Using condition_variable_t implementation: stl11
+-- Looking for include file ifaddrs.h
+-- Looking for include file ifaddrs.h - found
+-- Looking for include file sys/uio.h
+-- Looking for include file sys/uio.h - found
+-- Looking for include file sys/eventfd.h
+-- Looking for include file sys/eventfd.h - found
+-- Checking whether EFD_CLOEXEC is supported
+-- Performing Test ZMQ_HAVE_EVENTFD_CLOEXEC
+-- Performing Test ZMQ_HAVE_EVENTFD_CLOEXEC - Success
+-- Looking for if_nametoindex
+-- Looking for if_nametoindex - found
+-- Looking for SO_PEERCRED
+-- Looking for SO_PEERCRED - found
+-- Looking for LOCAL_PEERCRED
+-- Looking for LOCAL_PEERCRED - not found
+-- Looking for SO_BUSY_POLL
+-- Looking for SO_BUSY_POLL - found
+-- Looking for clock_gettime
+-- Looking for clock_gettime - found
+-- Looking for fork
+-- Looking for fork - found
+-- Looking for gethrtime
+-- Looking for gethrtime - not found
+-- Looking for mkdtemp
+-- Looking for mkdtemp - found
+-- Looking for accept4
+-- Looking for accept4 - found
+-- Looking for strnlen
+-- Looking for strnlen - found
+-- Performing Test HAVE_FLAG_-Wall
+-- Performing Test HAVE_FLAG_-Wall - Success
+-- Performing Test HAVE_FLAG_-Wextra
+-- Performing Test HAVE_FLAG_-Wextra - Success
+-- Performing Test HAVE_FLAG_-Wno-long-long
+-- Performing Test HAVE_FLAG_-Wno-long-long - Success
+-- Performing Test HAVE_FLAG_-Wno-uninitialized
+-- Performing Test HAVE_FLAG_-Wno-uninitialized - Success
+-- Performing Test HAVE_FLAG_-pedantic
+-- Performing Test HAVE_FLAG_-pedantic - Success
+-- Checking whether noexcept is supported
+-- Performing Test ZMQ_HAVE_NOEXCEPT
+-- Performing Test ZMQ_HAVE_NOEXCEPT - Success
+-- Checking pthread_setname signature
+-- Performing Test ZMQ_HAVE_PTHREAD_SETNAME_1
+-- Performing Test ZMQ_HAVE_PTHREAD_SETNAME_1 - Failed
+-- Performing Test ZMQ_HAVE_PTHREAD_SETNAME_2
+-- Performing Test ZMQ_HAVE_PTHREAD_SETNAME_2 - Success
+-- Performing Test ZMQ_HAVE_PTHREAD_SETNAME_3
+-- Performing Test ZMQ_HAVE_PTHREAD_SETNAME_3 - Failed
+-- Performing Test ZMQ_HAVE_PTHREAD_SET_NAME
+-- Performing Test ZMQ_HAVE_PTHREAD_SET_NAME - Failed
+-- Checking pthread_setaffinity signature
+-- Performing Test ZMQ_HAVE_PTHREAD_SET_AFFINITY
+-- Performing Test ZMQ_HAVE_PTHREAD_SET_AFFINITY - Success
+-- Checking whether SOCK_CLOEXEC is supported
+-- Performing Test ZMQ_HAVE_SOCK_CLOEXEC
+-- Performing Test ZMQ_HAVE_SOCK_CLOEXEC - Success
+-- Checking whether O_CLOEXEC is supported
+-- Performing Test ZMQ_HAVE_O_CLOEXEC
+-- Performing Test ZMQ_HAVE_O_CLOEXEC - Failed
+-- Checking whether SO_BINDTODEVICE is supported
+-- Performing Test ZMQ_HAVE_SO_BINDTODEVICE
+-- Performing Test ZMQ_HAVE_SO_BINDTODEVICE - Success
+-- Checking whether SO_KEEPALIVE is supported
+-- Performing Test ZMQ_HAVE_SO_KEEPALIVE
+-- Performing Test ZMQ_HAVE_SO_KEEPALIVE - Success
+-- Checking whether SO_PRIORITY is supported
+-- Performing Test ZMQ_HAVE_SO_PRIORITY
+-- Performing Test ZMQ_HAVE_SO_PRIORITY - Success
+-- Checking whether TCP_KEEPCNT is supported
+-- Performing Test ZMQ_HAVE_TCP_KEEPCNT
+-- Performing Test ZMQ_HAVE_TCP_KEEPCNT - Success
+-- Checking whether TCP_KEEPIDLE is supported
+-- Performing Test ZMQ_HAVE_TCP_KEEPIDLE
+-- Performing Test ZMQ_HAVE_TCP_KEEPIDLE - Success
+-- Checking whether TCP_KEEPINTVL is supported
+-- Performing Test ZMQ_HAVE_TCP_KEEPINTVL
+-- Performing Test ZMQ_HAVE_TCP_KEEPINTVL - Success
+-- Checking whether TCP_KEEPALIVE is supported
+-- Performing Test ZMQ_HAVE_TCP_KEEPALIVE
+-- Performing Test ZMQ_HAVE_TCP_KEEPALIVE - Failed
+-- Checking whether TIPC is supported
+-- Performing Test ZMQ_HAVE_TIPC
+-- Performing Test ZMQ_HAVE_TIPC - Success
+-- Checking whether getrandom is supported
+-- Performing Test ZMQ_HAVE_GETRANDOM
+-- Performing Test ZMQ_HAVE_GETRANDOM - Failed
+-- Found AsciiDoc: /usr/bin/asciidoc  
+-- Package cppzmq not found, fetching from git@github.com:zeromq/cppzmq.git
+-- Detected CPPZMQ Version - 4.11.0
+-- cppzmq v4.11.0
+-- Package cunqasimulator not found, fetching from git@github.com:CESGA-Quantum-Spain/cunqasimulator.git
+-- C++ version  configured.
+-- 3.23.0-rc2
+-- C++ Compiler: /lusitania_apps/ccache/ccache-4.8.3/opt/bin/ccache
+-- Configuring with DOUBLE precision (default) for specific library.
+-- Eigen3 not found, fetching from gitlab...
+-- Found OpenMP_C: -fopenmp (found version "4.5") 
+-- Found OpenMP_CXX: -fopenmp (found version "4.5") 
+-- Found OpenMP: TRUE (found version "4.5")  
+-- Performing Test flag_supported
+-- Performing Test flag_supported - Success
+-- Found Boost: /lusitania_apps/boost-1.78.0/lib/cmake/Boost-1.78.0/BoostConfig.cmake (found version "1.78.0") found components: json container serialization 
+-- CMAKE_CXX_COMPILER_ID = GNU
+-- CMAKE_C_COMPILER_VERSION = 11.2.0
+-- CMAKE_CXX_COMPILER_VERSION = 11.2.0
+-- Performing Test C_HAS_AVX2
+-- Performing Test C_HAS_AVX2 - Success
+-- Performing Test CXX_HAS_AVX2
+-- Performing Test CXX_HAS_AVX2 - Success
+-- AVX2_FOUND = TRUE
+-- CMAKE_HOST_SYSTEM_PROCESSOR = x86_64
+-- USE_SIMD = Yes
+-- USE_OMP = Yes
+-- USE_MPI = No
+-- USE_GPU = No
+-- USE_TEST = No
+-- COVERAGE = No
+-- USE_PYTHON = OFF
+-- OPT_FLAGS = -march=native -mfpmath=both
+-- Found Boost: /lusitania_apps/boost-1.78.0/lib/cmake/Boost-1.78.0/BoostConfig.cmake (found suitable version "1.78.0", minimum required is "1.71.0")  
+-- Boost found at /lusitania_apps/boost-1.78.0/include
+-- Skip downloding googletest
+-- Skip downloading pybind11
+-- Install from cmakebuild
+-- AVX2 Enabled
+-- CMAKE_SYSTEM_NAME = Linux
+-- CMAKE_C_COMPILER = /lusitania_apps/ccache/ccache-4.8.3/opt/bin/ccache
+-- CMAKE_CXX_COMPILER = /lusitania_apps/ccache/ccache-4.8.3/opt/bin/ccache
+-- CMAKE_BUILD_TYPE = Release
+-- CMAKE_CXX_FLAGS =  -w -pthread -fopenmp
+-- CMAKE_CXX_FLAGS_DEBUG = -g
+-- CMAKE_CXX_FLAGS_RELEASE = -O3 -DNDEBUG -march=native -mfpmath=both
+-- Classical channel uses ZMQ
+-- Added zmq folder for classical communications.
+-- Python modules will be installed to: /lusitania_homes/CenitS/jesus.cerrudo/lib/python./site-packages/cunqa
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /lusitania_homes/CenitS/jesus.cerrudo/cunqa-latest/cunqa/build
+[  0%] Building CXX object _deps/cunqasimulator-build/src/CMakeFiles/cunqasimulator.dir/executor.cpp.o
+[  0%] Building CXX object _deps/maestro-build/CMakeFiles/maestro.dir/maestrolib/dllmain.cpp.o
+[  0%] Building CXX object src/utils/CMakeFiles/json.dir/json.cpp.o
+[  0%] Building CXX object _deps/cunqasimulator-build/src/CMakeFiles/cunqasimulator.dir/mpi_executor.cpp.o
+[  0%] Building CXX object _deps/cunqasimulator-build/src/CMakeFiles/cunqasimulator.dir/implementations.cpp.o
+[  0%] Building CXX object _deps/spdlog-build/CMakeFiles/spdlog.dir/src/color_sinks.cpp.o
+[  0%] Building CXX object _deps/spdlog-build/CMakeFiles/spdlog.dir/src/spdlog.cpp.o
+[  0%] Building CXX object _deps/maestro-build/CMakeFiles/maestro.dir/maestrolib/Interface.cpp.o
+[  1%] Building CXX object _deps/spdlog-build/CMakeFiles/spdlog.dir/src/stdout_sinks.cpp.o
+[  1%] Building CXX object _deps/cunqasimulator-build/src/CMakeFiles/cunqasimulator.dir/result_cunqasim.cpp.o
+[  0%] Creating directories for 'eigen'
+[  2%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/QuantumComputation.cpp.o
+[  2%] Building CXX object _deps/spdlog-build/CMakeFiles/spdlog.dir/src/async.cpp.o
+[  2%] Building CXX object _deps/cunqasimulator-build/src/CMakeFiles/cunqasimulator.dir/mpi_implementations.cpp.o
+[  2%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/operations/AodOperation.cpp.o
+[  2%] Building CXX object _deps/spdlog-build/CMakeFiles/spdlog.dir/src/cfg.cpp.o
+[  2%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/Permutation.cpp.o
+[  2%] Building CXX object _deps/spdlog-build/CMakeFiles/spdlog.dir/src/bundled_fmtlib_format.cpp.o
+[  3%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/operations/NonUnitaryOperation.cpp.o
+[  3%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/operations/CompoundOperation.cpp.o
+[  3%] Building CXX object _deps/spdlog-build/CMakeFiles/spdlog.dir/src/file_sinks.cpp.o
+[  3%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/operations/ClassicControlledOperation.cpp.o
+[  3%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/operations/Expression.cpp.o
+[  3%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/ws_address.cpp.o
+[  3%] Performing download step (download, verify and extract) for 'eigen'
+-- Downloading...
+   dst='/lusitania_homes/CenitS/jesus.cerrudo/cunqa-latest/cunqa/build/_deps/qulacs-build/eigen/src/eigen-3.3.7.tar.gz'
+   timeout='none'
+   inactivity timeout='none'
+-- Using src='https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz'
+[  4%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/ws_connecter.cpp.o
+[  4%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/ws_decoder.cpp.o
+[  4%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/ws_encoder.cpp.o
+[  5%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/ws_engine.cpp.o
+[  5%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/ws_listener.cpp.o
+[  5%] Building C object _deps/libzmq-build/CMakeFiles/objects.dir/external/sha1/sha1.c.o
+[  5%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/precompiled.cpp.o
+[  5%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/operations/Operation.cpp.o
+[  7%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/address.cpp.o
+[  7%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/operations/StandardOperation.cpp.o
+[  7%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/channel.cpp.o
+[  8%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/client.cpp.o
+[  8%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/ctx.cpp.o
+[  8%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/clock.cpp.o
+[  8%] Linking CXX shared library libspdlog.so
+[  8%] Linking CXX static library libjson.a
+[  8%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/curve_client.cpp.o
+[  8%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/curve_mechanism_base.cpp.o
+[  9%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/curve_server.cpp.o
+[  9%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/dealer.cpp.o
+[  9%] Linking CXX static library libcunqasimulator.a
+[  9%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/operations/SymbolicOperation.cpp.o
+[  9%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/parsers/QASM3Parser.cpp.o
+[  9%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/parsers/QCParser.cpp.o
+[  9%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/parsers/RealParser.cpp.o
+[  9%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/devpoll.cpp.o
+[  9%] Built target json
+[  9%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/dgram.cpp.o
+[  9%] Built target cunqasimulator
+[ 10%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/parsers/TFCParser.cpp.o
+[ 11%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/dist.cpp.o
+[ 11%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/endpoint.cpp.o
+[ 11%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/epoll.cpp.o
+[ 11%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/parsers/qasm3_parser/Parser.cpp.o
+[ 11%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/err.cpp.o
+[ 11%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/parsers/qasm3_parser/Scanner.cpp.o
+[ 11%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/fq.cpp.o
+[ 11%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/parsers/qasm3_parser/Statement.cpp.o
+[ 11%] Building CXX object src/cli/CMakeFiles/qdrop.dir/qdrop.cpp.o
+[ 13%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/parsers/qasm3_parser/Types.cpp.o
+[ 14%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/parsers/qasm3_parser/passes/ConstEvalPass.cpp.o
+[ 14%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/io_object.cpp.o
+[ 14%] Building CXX object src/cli/CMakeFiles/erase_key.dir/erase_key.cpp.o
+[ 14%] Building CXX object _deps/mqt-core-build/src/ir/CMakeFiles/mqt-core-ir.dir/parsers/qasm3_parser/passes/TypeCheckPass.cpp.o
+-- Downloading... done
+[ 14%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/io_thread.cpp.o
+[ 14%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/ipc_address.cpp.o
+[ 14%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/ip.cpp.o
+-- extracting...
+     src='/lusitania_homes/CenitS/jesus.cerrudo/cunqa-latest/cunqa/build/_deps/qulacs-build/eigen/src/eigen-3.3.7.tar.gz'
+     dst='/lusitania_homes/CenitS/jesus.cerrudo/cunqa-latest/cunqa/build/_deps/qulacs-build/eigen/src/eigen'
+-- extracting... [tar xfz]
+[ 14%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/ipc_connecter.cpp.o
+[ 15%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/ipc_listener.cpp.o
+[ 15%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/kqueue.cpp.o
+[ 15%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/lb.cpp.o
+[ 15%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/mailbox.cpp.o
+[ 16%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/mechanism.cpp.o
+[ 16%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/mailbox_safe.cpp.o
+[ 16%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/mechanism_base.cpp.o
+[ 16%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/metadata.cpp.o
+[ 16%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/msg.cpp.o
+[ 17%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/mtrie.cpp.o
+[ 17%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/norm_engine.cpp.o
+[ 17%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/object.cpp.o
+[ 17%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/options.cpp.o
+[ 17%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/own.cpp.o
+[ 17%] Linking CXX static library libmqt-core-ir.a
+[ 17%] Linking CXX executable qdrop
+[ 17%] Built target spdlog
+[ 19%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/null_mechanism.cpp.o
+[ 19%] Linking CXX executable erase_key
+[ 19%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/pair.cpp.o
+[ 19%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/peer.cpp.o
+[ 19%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/pgm_receiver.cpp.o
+[ 20%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/pgm_sender.cpp.o
+[ 20%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/pgm_socket.cpp.o
+[ 20%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/pipe.cpp.o
+[ 20%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/plain_client.cpp.o
+[ 21%] Building CXX object _deps/cunqasimulator-build/examples/CMakeFiles/example.dir/example.cpp.o
+[ 21%] Building CXX object _deps/cunqasimulator-build/examples/CMakeFiles/mpi_example.dir/mpi_example.cpp.o
+[ 21%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/plain_server.cpp.o
+[ 21%] Building CXX object _deps/cunqasimulator-build/examples/CMakeFiles/gate_test.dir/gate_test.cpp.o
+[ 22%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/poller_base.cpp.o
+[ 22%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/poll.cpp.o
+[ 22%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/polling_util.cpp.o
+[ 22%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/pollset.cpp.o
+[ 22%] Building CXX object _deps/cunqasimulator-build/examples/CMakeFiles/gate_bench.dir/gate_benchmarking.cpp.o
+[ 22%] Building CXX object _deps/cunqasimulator-build/examples/CMakeFiles/run_test.dir/run_test.cpp.o
+[ 22%] Building CXX object src/utils/logger/CMakeFiles/logger_qpu.dir/logger_qpu.cpp.o
+[ 22%] Building CXX object src/utils/logger/CMakeFiles/logger_client.dir/logger_client.cpp.o
+[ 22%] Building CXX object src/utils/logger/CMakeFiles/logger_executor.dir/logger_executor.cpp.o
+[ 22%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/proxy.cpp.o
+[ 23%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/pull.cpp.o
+[ 23%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/pub.cpp.o
+[ 23%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/push.cpp.o
+[ 23%] Built target qdrop
+[ 23%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/random.cpp.o
+[ 25%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/raw_encoder.cpp.o
+[ 25%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/raw_decoder.cpp.o
+[ 25%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/raw_engine.cpp.o
+[ 25%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/reaper.cpp.o
+[ 25%] Linking CXX executable example
+[ 25%] Built target mqt-core-ir
+[ 25%] Linking CXX executable mpi_example
+[ 25%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/rep.cpp.o
+[ 25%] Built target erase_key
+[ 26%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/req.cpp.o
+[ 26%] Linking CXX executable gate_test
+[ 26%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/router.cpp.o
+[ 26%] Linking CXX static library liblogger_client.a
+[ 26%] Linking CXX static library liblogger_qpu.a
+[ 27%] Linking CXX static library liblogger_executor.a
+[ 27%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/select.cpp.o
+[ 28%] Linking CXX executable run_test
+[ 29%] Linking CXX executable gate_bench
+[ 29%] Building CXX object _deps/mqt-core-build/src/algorithms/CMakeFiles/mqt-core-algorithms.dir/BernsteinVazirani.cpp.o
+[ 29%] Building CXX object _deps/mqt-core-build/src/circuit_optimizer/CMakeFiles/mqt-core-circuit-optimizer.dir/CircuitOptimizer.cpp.o
+[ 30%] Building CXX object _deps/mqt-core-build/src/algorithms/CMakeFiles/mqt-core-algorithms.dir/Entanglement.cpp.o
+[ 30%] Building CXX object _deps/mqt-core-build/src/algorithms/CMakeFiles/mqt-core-algorithms.dir/Grover.cpp.o
+[ 30%] Building CXX object _deps/mqt-core-build/src/datastructures/CMakeFiles/mqt-core-ds.dir/Layer.cpp.o
+[ 32%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/CachedEdge.cpp.o
+[ 32%] Building CXX object _deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/FunctionalityConstruction.cpp.o
+[ 32%] Built target logger_client
+[ 32%] Built target logger_qpu
+[ 32%] Built target logger_executor
+[ 33%] Building CXX object _deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/Rational.cpp.o
+[ 33%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/Complex.cpp.o
+[ 33%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/ComplexNumbers.cpp.o
+[ 33%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/ComplexValue.cpp.o
+[ 33%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/Edge.cpp.o
+[ 34%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/FunctionalityConstruction.cpp.o
+[ 34%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/MemoryManager.cpp.o
+[ 34%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/Node.cpp.o
+[ 34%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/NoiseFunctionality.cpp.o
+[ 34%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/server.cpp.o
+[ 34%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/session_base.cpp.o
+[ 34%] Built target example
+[ 34%] Built target mpi_example
+[ 35%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/signaler.cpp.o
+[ 35%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/socket_base.cpp.o
+[ 35%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/socks.cpp.o
+[ 35%] Linking CXX static library libmqt-core-circuit-optimizer.a
+[ 35%] Building CXX object _deps/mqt-core-build/src/algorithms/CMakeFiles/mqt-core-algorithms.dir/QFT.cpp.o
+[ 35%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/socks_connecter.cpp.o
+[ 35%] Built target gate_bench
+[ 36%] Built target run_test
+[ 36%] Linking CXX static library libmqt-core-ds.a
+[ 36%] Built target gate_test
+[ 38%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/stream.cpp.o
+[ 38%] Building CXX object _deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/Rules.cpp.o
+[ 38%] Building CXX object _deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/Simplify.cpp.o
+[ 38%] Building CXX object _deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/Utils.cpp.o
+[ 39%] Building CXX object _deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/ZXDiagram.cpp.o
+[ 40%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/Operations.cpp.o
+[ 40%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/stream_engine_base.cpp.o
+[ 40%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/sub.cpp.o
+[ 40%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/tcp.cpp.o
+[ 40%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/RealNumber.cpp.o
+[ 40%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/tcp_address.cpp.o
+[ 41%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/tcp_connecter.cpp.o
+[ 41%] Built target mqt-core-circuit-optimizer
+[ 41%] Built target mqt-core-ds
+[ 41%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/RealNumberUniqueTable.cpp.o
+[ 41%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/statistics/MemoryManagerStatistics.cpp.o
+[ 41%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/Simulation.cpp.o
+[ 42%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/statistics/Statistics.cpp.o
+[ 42%] Building CXX object _deps/mqt-core-build/src/algorithms/CMakeFiles/mqt-core-algorithms.dir/QPE.cpp.o
+[ 44%] Building CXX object src/cli/CMakeFiles/qinfo.dir/qinfo.cpp.o
+[ 44%] Building CXX object src/cli/CMakeFiles/qraise.dir/qraise.cpp.o
+[ 44%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/tcp_listener.cpp.o
+[ 44%] Building CXX object _deps/mqt-core-build/src/algorithms/CMakeFiles/mqt-core-algorithms.dir/RandomCliffordCircuit.cpp.o
+[ 44%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/statistics/TableStatistics.cpp.o
+[ 44%] Building CXX object src/CMakeFiles/quantum_task.dir/quantum_task.cpp.o
+[ 44%] Building CXX object _deps/mqt-core-build/src/dd/CMakeFiles/mqt-core-dd.dir/statistics/UniqueTableStatistics.cpp.o
+[ 44%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/thread.cpp.o
+[ 45%] Building CXX object _deps/mqt-core-build/src/algorithms/CMakeFiles/mqt-core-algorithms.dir/WState.cpp.o
+[ 45%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/trie.cpp.o
+[ 45%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/radix_tree.cpp.o
+[ 46%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/v1_decoder.cpp.o
+[ 46%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/v1_encoder.cpp.o
+[ 46%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/v2_decoder.cpp.o
+[ 46%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/v2_encoder.cpp.o
+[ 47%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/v3_1_encoder.cpp.o
+[ 47%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/xpub.cpp.o
+[ 47%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/xsub.cpp.o
+[ 47%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/zmq.cpp.o
+[ 47%] Linking CXX executable qinfo
+[ 47%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/zmq_utils.cpp.o
+[ 50%] Linking CXX executable qraise
+[ 50%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/decoder_allocators.cpp.o
+[ 50%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/socket_poller.cpp.o
+[ 50%] Linking CXX static library libquantum_task.a
+[ 50%] Linking CXX static library libmqt-core-dd.a
+[ 50%] Linking CXX static library libmqt-core-algorithms.a
+[ 50%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/timers.cpp.o
+[ 50%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/radio.cpp.o
+[ 50%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/dish.cpp.o
+[ 50%] Built target quantum_task
+[ 51%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/udp_engine.cpp.o
+[ 51%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/udp_address.cpp.o
+[ 51%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/scatter.cpp.o
+[ 51%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/gather.cpp.o
+[ 52%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/ip_resolver.cpp.o
+[ 52%] Building CXX object _deps/mqt-core-build/src/na/CMakeFiles/mqt-core-na.dir/NAComputation.cpp.o
+[ 52%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/zap_client.cpp.o
+[ 52%] Built target mqt-core-dd
+[ 53%] Building CXX object _deps/mqt-core-build/src/na/CMakeFiles/mqt-core-na.dir/operations/NAGlobalOperation.cpp.o
+[ 53%] Built target qinfo
+[ 53%] Building CXX object _deps/mqt-core-build/src/na/CMakeFiles/mqt-core-na.dir/operations/NALocalOperation.cpp.o
+[ 53%] Building CXX object _deps/mqt-core-build/src/na/CMakeFiles/mqt-core-na.dir/operations/NAShuttlingOperation.cpp.o
+[ 53%] Built target qraise
+[ 53%] Building CXX object _deps/mqt-ddsim-build/src/CMakeFiles/mqt-ddsim.dir/CircuitSimulator.cpp.o
+[ 53%] Built target mqt-core-algorithms
+[ 53%] Building CXX object _deps/mqt-ddsim-build/src/CMakeFiles/mqt-ddsim.dir/DeterministicNoiseSimulator.cpp.o
+[ 53%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/zmtp_engine.cpp.o
+[ 53%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/stream_connecter_base.cpp.o
+[ 54%] Building CXX object _deps/mqt-ddsim-build/src/CMakeFiles/mqt-ddsim.dir/ShorFastSimulator.cpp.o
+[ 54%] Building CXX object _deps/mqt-ddsim-build/src/CMakeFiles/mqt-ddsim.dir/GroverSimulator.cpp.o
+[ 55%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/tipc_address.cpp.o
+[ 55%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/stream_listener_base.cpp.o
+[ 55%] Building CXX object _deps/mqt-ddsim-build/src/CMakeFiles/mqt-ddsim.dir/PathSimulator.cpp.o
+[ 55%] Building CXX object _deps/mqt-ddsim-build/src/CMakeFiles/mqt-ddsim.dir/ShorSimulator.cpp.o
+[ 55%] Building CXX object _deps/mqt-ddsim-build/src/CMakeFiles/mqt-ddsim.dir/HybridSchrodingerFeynmanSimulator.cpp.o
+[ 55%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/tipc_connecter.cpp.o
+[ 55%] Building CXX object _deps/libzmq-build/CMakeFiles/objects.dir/src/tipc_listener.cpp.o
+[ 55%] Linking CXX static library libmqt-core-na.a
+[ 55%] Building CXX object _deps/mqt-ddsim-build/src/CMakeFiles/mqt-ddsim.dir/Simulator.cpp.o
+[ 57%] Building CXX object _deps/mqt-ddsim-build/src/CMakeFiles/mqt-ddsim.dir/StochasticNoiseSimulator.cpp.o
+[ 57%] Building CXX object _deps/mqt-ddsim-build/src/CMakeFiles/mqt-ddsim.dir/UnitarySimulator.cpp.o
+[ 57%] Built target mqt-core-na
+[ 57%] Linking CXX static library libmqt-ddsim.a
+[ 57%] Built target objects
+[ 58%] Linking CXX shared library lib/libzmq.so
+-- extracting... [analysis]
+-- extracting... [rename]
+-- extracting... [clean up]
+-- extracting... done
+[ 58%] No update step for 'eigen'
+[ 59%] No patch step for 'eigen'
+[ 59%] No configure step for 'eigen'
+[ 60%] No build step for 'eigen'
+[ 60%] Built target mqt-ddsim
+[ 60%] Performing install step for 'eigen'
+[ 60%] Building CXX object src/backends/simulators/Munich/CMakeFiles/munich_simple_simulator.dir/munich_simple_simulator.cpp.o
+[ 60%] Built target libzmq
+[ 60%] Building CXX object src/comm/comm_impl/zmq/CMakeFiles/server.dir/zmq_server.cpp.o
+[ 60%] Building CXX object src/comm/comm_impl/zmq/CMakeFiles/client.dir/zmq_client.cpp.o
+[ 60%] Building CXX object src/classical_channel/classical_channel_impl/zmq/CMakeFiles/classical_channel.dir/zmq_classical_channel.cpp.o
+[ 60%] Linking CXX static library libclient.a
+[ 60%] Linking CXX static library libserver.a
+[ 61%] Linking CXX static library libclassical_channel.a
+[ 61%] Built target client
+[ 61%] Built target server
+[ 61%] Building CXX object examples/cpp/CMakeFiles/example1.dir/example1.cpp.o
+[ 63%] Building CXX object examples/cpp/CMakeFiles/simplest.dir/simplest_example.cpp.o
+[ 64%] Building CXX object examples/cpp/CMakeFiles/example3.dir/example3.cpp.o
+[ 64%] Building CXX object cunqa/CMakeFiles/qclient.dir/bindings.cpp.o
+[ 65%] Building CXX object examples/cpp/CMakeFiles/qc_example.dir/qc_example.cpp.o
+[ 65%] Building CXX object examples/cpp/CMakeFiles/example2.dir/example2.cpp.o
+[ 65%] Built target classical_channel
+[ 65%] Building CXX object src/CMakeFiles/qpu.dir/qpu.cpp.o
+[ 66%] Building CXX object src/cli/CMakeFiles/setup_qmio.dir/setup_qmio.cpp.o
+[ 66%] Building CXX object src/backends/simulators/Munich/munich_adapters/CMakeFiles/munich_adapters.dir/munich_simulator_adapter.cpp.o
+[ 66%] Building CXX object src/backends/simulators/CUNQA/cunqa_adapters/CMakeFiles/cunqa_adapters.dir/cunqa_simulator_adapter.cpp.o
+[ 67%] Building CXX object src/backends/simulators/AER/aer_adapters/CMakeFiles/aer_adapters.dir/aer_simulator_adapter.cpp.o
+[ 67%] Building CXX object src/backends/simulators/Munich/CMakeFiles/munich_qc_simulator.dir/munich_qc_simulator.cpp.o
+[ 67%] Linking CXX executable example1
+[ 67%] Linking CXX executable example3
+[ 67%] Linking CXX executable example2
+[ 67%] Linking CXX executable qc_example
+_deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/build.make:103: recipe for target '_deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/Rules.cpp.o' failed
+[ 67%] Built target example1
+_deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/build.make:145: recipe for target '_deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/ZXDiagram.cpp.o' failed
+[ 67%] Built target example3
+[ 67%] Built target example2
+_deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/build.make:89: recipe for target '_deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/Rational.cpp.o' failed
+_deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/build.make:117: recipe for target '_deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/Simplify.cpp.o' failed
+[ 67%] Built target qc_example
+_deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/build.make:131: recipe for target '_deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/Utils.cpp.o' failed
+_deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/build.make:75: recipe for target '_deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/FunctionalityConstruction.cpp.o' failed
+CMakeFiles/Makefile2:1329: recipe for target '_deps/mqt-core-build/src/zx/CMakeFiles/mqt-core-zx.dir/all' failed
+[ 67%] No test step for 'eigen'
+[ 67%] Completed 'eigen'
+[ 67%] Built target eigen
+cunqa/CMakeFiles/qclient.dir/build.make:75: recipe for target 'cunqa/CMakeFiles/qclient.dir/bindings.cpp.o' failed
+CMakeFiles/Makefile2:4064: recipe for target 'cunqa/CMakeFiles/qclient.dir/all' failed
+src/cli/CMakeFiles/setup_qmio.dir/build.make:75: recipe for target 'src/cli/CMakeFiles/setup_qmio.dir/setup_qmio.cpp.o' failed
+CMakeFiles/Makefile2:4009: recipe for target 'src/cli/CMakeFiles/setup_qmio.dir/all' failed
+[ 67%] Linking CXX executable simplest
+[ 67%] Built target simplest
+[ 67%] Linking CXX static library libqpu.a
+[ 67%] Built target qpu
+src/backends/simulators/Munich/munich_adapters/CMakeFiles/munich_adapters.dir/build.make:75: recipe for target 'src/backends/simulators/Munich/munich_adapters/CMakeFiles/munich_adapters.dir/munich_simulator_adapter.cpp.o' failed
+CMakeFiles/Makefile2:3235: recipe for target 'src/backends/simulators/Munich/munich_adapters/CMakeFiles/munich_adapters.dir/all' failed
+[ 67%] Linking CXX static library libcunqa_adapters.a
+[ 67%] Built target cunqa_adapters
+[ 67%] Linking CXX static library libmunich_qc_simulator.a
+[ 67%] Built target munich_qc_simulator
+[ 67%] Linking CXX static library libmunich_simple_simulator.a
+[ 67%] Built target munich_simple_simulator
+[ 67%] Linking CXX static library libaer_adapters.a
+[ 67%] Built target aer_adapters
+[ 69%] Linking CXX shared library libmaestro.so
+[ 69%] Built target maestro
+Makefile:135: recipe for target 'all' failed
+-- Install configuration: "Release"
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/libspdlog.so.1.16.0
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/libspdlog.so.1.16
+-- Set runtime path of "/lusitania_homes/CenitS/jesus.cerrudo/lib/libspdlog.so.1.16.0" to "/lusitania_homes/CenitS/jesus.cerrudo/lib"
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/libspdlog.so
+-- Up-to-date: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/taskflow.hpp
+-- Up-to-date: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/algorithm
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/algorithm/for_each.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/algorithm/launch.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/algorithm/partitioner.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/algorithm/scan.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/algorithm/pipeline.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/algorithm/find.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/algorithm/reduce.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/algorithm/data_pipeline.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/algorithm/critical.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/algorithm/transform.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/algorithm/sort.hpp
+-- Up-to-date: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/sycl
+-- Up-to-date: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/sycl/algorithm
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/sycl/algorithm/sycl_for_each.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/sycl/algorithm/reduce.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/sycl/algorithm/sycl_transform.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/sycl/sycl_execution_policy.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/sycl/syclflow.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/sycl/sycl_graph.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/sycl/sycl_task.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/sycl/sycl_meta.hpp
+-- Up-to-date: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/cuda_meta.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/cuda_stream.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/cuda_device.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/cuda_task.hpp
+-- Up-to-date: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/algorithm
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/algorithm/merge.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/algorithm/for_each.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/algorithm/scan.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/algorithm/find.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/algorithm/reduce.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/algorithm/transpose.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/algorithm/transform.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/algorithm/sort.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/algorithm/matmul.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/cuda_execution_policy.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/cuda_object.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/cuda_graph.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/cuda_error.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/cuda_memory.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/cuda_capturer.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/cuda_optimizer.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/cuda/cudaflow.hpp
+-- Up-to-date: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/notifier.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/taskflow.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/declarations.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/flow_builder.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/environment.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/graph.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/async.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/topology.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/error.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/executor-module-opt.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/async_task.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/executor.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/observer.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/worker.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/task.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/tsq.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/core/semaphore.hpp
+-- Up-to-date: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/utility
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/utility/object_pool.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/utility/serializer.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/utility/uuid.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/utility/stream.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/utility/iterator.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/utility/singleton.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/utility/macros.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/utility/traits.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/utility/math.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/utility/small_vector.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/utility/os.hpp
+-- Up-to-date: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/dsl
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/dsl/tuple_utils.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/dsl/task_trait.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/dsl/task_dsl.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/dsl/meta_macro.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/dsl/dsl.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/dsl/task_analyzer.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/dsl/connection.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/taskflow/dsl/type_list.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/cmake/Taskflow/TaskflowTargets.cmake
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/cmake/Taskflow/TaskflowConfig.cmake
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/cmake/Taskflow/TaskflowConfigVersion.cmake
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/pkgconfig/libzmq.pc
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/libzmq.so.5.2.5
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/libzmq.so.5
+-- Set runtime path of "/lusitania_homes/CenitS/jesus.cerrudo/lib/libzmq.so.5.2.5" to "/lusitania_homes/CenitS/jesus.cerrudo/lib"
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/libzmq.so
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/zmq.h
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/zmq_utils.h
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/share/zmq/AUTHORS.txt
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/share/zmq/LICENSE.txt
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/share/zmq/NEWS.txt
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/cmake/ZeroMQ/ZeroMQTargets.cmake
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/cmake/ZeroMQ/ZeroMQTargets-release.cmake
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/cmake/ZeroMQ/ZeroMQConfig.cmake
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/cmake/ZeroMQ/ZeroMQConfigVersion.cmake
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/zmq.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/zmq_addon.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/pkgconfig/cppzmq.pc
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/share/cmake/cppzmq/cppzmqTargets.cmake
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/share/cmake/cppzmq/cppzmqConfig.cmake
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/share/cmake/cppzmq/cppzmqConfigVersion.cmake
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/share/cmake/cppzmq/libzmq-pkg-config/FindZeroMQ.cmake
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/cmake/argparse/argparseConfig.cmake
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/include/argparse/argparse.hpp
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/asyncio.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/_typing.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/error.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/__init__.pyi
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cffi
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cffi/_poll.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cffi/socket.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cffi/error.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cffi/_cdefs.h
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cffi/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cffi/message.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cffi/utils.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cffi/devices.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cffi/context.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cffi/README.md
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/context.pyx
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/_proxy_steerable.pyx
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/error.pyx
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/message.pxd
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/socket.pxd
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/__init__.pxd
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/context.pxd
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/_device.pyx
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/libzmq.pxd
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/_version.pyx
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/_poll.pyx
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/constant_enums.pxi
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/socket.pyx
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/utils.pyx
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/message.pyx
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/cython/checkrc.pxd
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/backend/select.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/log
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/log/__main__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/log/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/log/handlers.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/ssh
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/ssh/forward.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/ssh/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/ssh/tunnel.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/sugar
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/sugar/socket.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/sugar/__init__.pyi
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/sugar/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/sugar/attrsettr.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/sugar/poll.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/sugar/stopwatch.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/sugar/frame.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/sugar/context.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/sugar/tracker.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/sugar/version.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/eventloop
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/eventloop/ioloop.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/eventloop/future.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/eventloop/zmqstream.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/eventloop/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/eventloop/_deprecated.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/auth
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/auth/asyncio.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/auth/ioloop.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/auth/thread.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/auth/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/auth/base.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/auth/certs.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/__init__.pyi
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/__init__.pxd
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_draft.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_security.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_zmqstream.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_z85.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/conftest.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_log.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_monqueue.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_error.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_reqrep.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_ext.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_socket.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_cffi_backend.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_win32_shim.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_pair.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_future.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_imports.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_context.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_mypy.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_cython.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_retry_eintr.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_device.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_ssh.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_ioloop.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_includes.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_monitor.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_proxy_steerable.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_asyncio.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_version.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_decorators.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_poll.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_constants.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_auth.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_pubsub.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_etc.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/cython_ext.pyx
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_multipart.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/tests/test_message.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/green
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/green/eventloop
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/green/eventloop/ioloop.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/green/eventloop/zmqstream.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/green/eventloop/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/green/device.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/green/core.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/green/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/green/poll.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/devices
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/devices/monitoredqueue.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/devices/proxydevice.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/devices/basedevice.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/devices/monitoredqueuedevice.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/devices/monitoredqueue.pxd
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/devices/monitoredqueue.pyx
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/devices/proxysteerabledevice.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/devices/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/monitor.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/strtypes.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/garbage.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/ipcmaxlen.h
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/__init__.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/buffers.pxd
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/z85.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/getpid_compat.h
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/jsonapi.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/interop.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/win32.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/pyversion_compat.h
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/zmq_compat.h
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/utils/mutex.h
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/constants.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/_future.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/py.typed
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/python3.10/site-packages/zmq/decorators.py
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/lib/libmaestro.so
+-- Set runtime path of "/lusitania_homes/CenitS/jesus.cerrudo/lib/libmaestro.so" to "/lusitania_homes/CenitS/jesus.cerrudo/lib"
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/bin/qraise
+-- Set runtime path of "/lusitania_homes/CenitS/jesus.cerrudo/bin/qraise" to "/lusitania_homes/CenitS/jesus.cerrudo/lib"
+-- Installing: /lusitania_homes/CenitS/jesus.cerrudo/bin/qdrop
+-- Set runtime path of "/lusitania_homes/CenitS/jesus.cerrudo/bin/qdrop" to "/lusitania_homes/CenitS/jesus.cerrudo/lib"

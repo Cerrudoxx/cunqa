@@ -24,7 +24,7 @@ qc.cx(0, 1)
 qc.measure_all()
 
 qpu = qpus[0]
-qjob = qpu.run(qc, shots = 1000)# non-blocking call
+qjob = qpu.run(qc, shots = 100)# non-blocking call
 
 counts = qjob.result.counts
 time = qjob.time_taken

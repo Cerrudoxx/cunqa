@@ -1,0 +1,52 @@
+#!/bin/bash
+#SBATCH --job-name=grover25
+#SBATCH --partition=lusi2      # O la partición que uses (lusitania/lusi2)
+#SBATCH --nodes=2              # Nodos físicos (ajusta según disponibilidad)
+#SBATCH --ntasks=5             # IMPORTANTE: 4 vQPUs + 1 Executor = 5 tareas
+#SBATCH --cpus-per-task=1      # 1 CPU por tarea es suficiente para simulación simple
+#SBATCH --mem-per-cpu=4G       # Memoria para los qubits (25 qubits total)
+#SBATCH --time=08:00:00        # Tiempo límite
+#SBATCH --output=grover_%j.out
+#SBATCH --error=grover_%j.err
+# 1. Cargar módulos
+module purge
+# Asegúrate de cargar el módulo base de python que usaste para compilar (según configureLusitania.sh es este):
+module load gcc/gcc-11.2.0 cmake/cmake-3.23 openblas/openblas-0.3.24 openmpi/openmpi-4.1.2-gcc11.2.0 python/python-3.10
+
+# 2. Definir rutas de CUNQA
+CUNQA_ROOT="/lusitania_apps/python/python-3.10-cunqa-ex"
+
+# 3. TRUCO: Preguntar a Python dónde está su librería .so y añadirla
+PYTHON_LIB_DIR=$(python3 -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")
+echo "Detectada librería de Python en: $PYTHON_LIB_DIR"
+
+# 4. Construir el LD_LIBRARY_PATH blindado
+# Añadimos: La lib de Python + La lib de CUNQA + Lo que ya hubiera
+export LD_LIBRARY_PATH="${PYTHON_LIB_DIR}:${CUNQA_ROOT}/lib:${LD_LIBRARY_PATH}"
+
+# 5. Forzar la exportación de variables a los nodos
+export SLURM_EXPORT_ENV=ALL
+
+export PYTHONPATH="${CUNQA_ROOT}/lib/python3.10/site-packages:${PYTHONPATH}"
+export PATH="${PATH}:${CUNQA_ROOT}/bin"
+export EPILOG_PATH="${CUNQA_ROOT}/share/cunqa/epilog.sh"
+
+# Limpieza previa
+rm -f $HOME/.cunqa/qpus.json
+mkdir -p $HOME/.cunqa
+
+# --- LANZAMIENTO (Añade --export=ALL por seguridad) ---
+echo "Lanzando 4 vQPUs..."
+srun -n 4 --exclusive --export=ALL --task-epilog=$EPILOG_PATH setup_qpus co_located qc default Aer &
+sleep 10d
+
+echo "Lanzando Executor..."
+srun -n 1 --exclusive --export=ALL setup_executor Aer default &
+
+# --- 3. ESPERAR INICIALIZACIÓN ---
+echo "Esperando a que las QPUs arranquen..."
+sleep 20 # Damos tiempo para que generen el fichero ~/.cunqa/qpus.json
+
+# --- 4. EJECUTAR PYTHON ---
+echo "Lanzando script Grover..."
+python3 -u dist_grover_25qubits.py

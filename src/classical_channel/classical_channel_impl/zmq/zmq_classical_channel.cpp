@@ -52,7 +52,8 @@ struct ClassicalChannel::Impl
         auto client_id = id == "" ? endpoint : id; 
         if (zmq_sockets.find(client_id) == zmq_sockets.end()) {
             zmq::socket_t tmp_client_socket(zmq_context, zmq::socket_type::dealer);
-            tmp_client_socket.setsockopt(ZMQ_IDENTITY, zmq_id.c_str(), zmq_id.size());
+            //tmp_client_socket.setsockopt(ZMQ_IDENTITY, zmq_id.c_str(), zmq_id.size());
+            tmp_client_socket.set(zmq::sockopt::routing_id, zmq_id);
             zmq_sockets[client_id] = std::move(tmp_client_socket);
             zmq_sockets[client_id].connect(endpoint);
         }
@@ -63,7 +64,8 @@ struct ClassicalChannel::Impl
         if (zmq_sockets.find(endpoint) == zmq_sockets.end()) {
             zmq::socket_t tmp_client_socket(zmq_context, zmq::socket_type::dealer);
             std::string connexion_id = force_endpoint ? zmq_endpoint : zmq_id;
-            tmp_client_socket.setsockopt(ZMQ_IDENTITY, connexion_id.c_str(), connexion_id.size());
+            //tmp_client_socket.setsockopt(ZMQ_IDENTITY, connexion_id.c_str(), connexion_id.size());
+            tmp_client_socket.set(zmq::sockopt::routing_id, connexion_id);
             zmq_sockets[endpoint] = std::move(tmp_client_socket);
             zmq_sockets[endpoint].connect(endpoint);
         }

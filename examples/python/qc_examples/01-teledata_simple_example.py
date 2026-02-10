@@ -8,7 +8,7 @@ from cunqa.qutils import get_QPUs, qraise, qdrop
 from cunqa.circuit import CunqaCircuit
 from cunqa.qjob import gather
 
-family = qraise(4, "00:10:00", simulator="Aer", quantum_comm=True, co_located = True)
+family = qraise(4, "00:10:00", mem_per_qpu=2, simulator="Aer", quantum_comm=True, co_located = True)
 
 circuit1 = CunqaCircuit(2, id = "circuit1") # adding ancilla
 circuit2 = CunqaCircuit(1, id = "circuit2")

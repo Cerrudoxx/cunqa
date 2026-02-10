@@ -7,7 +7,7 @@ fi
 
 echo "Configuring environment for LUSITANIA (Lusi2 Compat Mode + ccache)"
 
-module load gcc/gcc-11.2.0 cmake/cmake-3.23 openblas/openblas-0.3.24 openmpi/openmpi-4.1.2-gcc11.2.0 python/python-3.10 ccache modules/libraries/eigen-3.4.0
+module load gcc/gcc-11.2.0 cmake/cmake-3.23 openblas/openblas-0.3.24 openmpi/openmpi-4.1.2-gcc11.2.0 python/python-3.10 ccache modules/libraries/eigen-3.4.0 boost/boost-1.78.0
 
 #ccache -C
 #ccache -z # Reset stats
@@ -48,6 +48,7 @@ if [ "$USE_NINJA" = true ]; then
   cmake --install build/
 else
   cmake -S . -B build/ $COMMON_FLAGS
-  time cmake --build build/ --parallel $(nproc)
+  #time cmake --build build/ --parallel $(nproc)
+  time cmake --build build/ --parallel 1
   cmake --install build/
 fi
