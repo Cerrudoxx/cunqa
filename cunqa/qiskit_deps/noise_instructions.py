@@ -4,19 +4,37 @@ import argparse
 import json
 import fcntl
 
-# Append to path to access CUNQA installation 
-sys.path.append(os.getenv("HOME"))
+# Aseguramos que Python encuentre el paquete 'cunqa' esté donde esté instalado
+# (Es más seguro que usar os.getenv("HOME"))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(current_dir, "../.."))
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
 
 from cunqa.constants import CUNQA_PATH
 from cunqa.logger import logger
 from cunqa.qiskit_deps.cunqabackend import CunqaBackend
 from qiskit_aer.noise import NoiseModel
 
+# ==============================================================================
+# Función auxiliar para rutas dinámicas (HPC / local)
+# ==============================================================================
+def get_user_cunqa_dir():
+    """Devuelve la ruta dinámica donde el usuario tiene permisos de escritura."""
+    store_env = os.environ.get("STORE")
+    if store_env:
+        return os.path.join(store_env, ".cunqa")
+    home_env = os.environ.get("HOME")
+    if home_env:
+        return os.path.join(home_env, ".cunqa")
+    return ".cunqa"
+
+
 def create_parser():
     """
     Create and return the configured argument parser
     """
-    parser = argparse.ArgumentParser(description="Your script description")
+    parser = argparse.ArgumentParser(description="FakeQmio from calibrations")
     
     # Add your arguments
     parser.add_argument("noise_properties_path", type=str, help="Path to calibrations noise_properties file")
@@ -27,19 +45,14 @@ def create_parser():
     parser.add_argument("family_name", type=str, help="Family name for QPUs")
     parser.add_argument("fakeqmio", type=int, help="FakeQmio noise properties provided")
     
+    # Recuperado de la versión antigua (opcional para mantener compatibilidad)
+    parser.add_argument("output_path", type=str, nargs='?', default=None, help="Path to save the noisy backend json")
+    
     return parser
 
-# TODO: actually implement this and use it. Avoid generating dependencies
 def validate_json_schema(json_data, schema_path):
     """
     Validate JSON data against a given schema.
-    
-    Args:
-        json_data (dict): JSON data to validate
-        schema_path (str): Path to the JSON schema file
-    
-    Raises:
-        ValueError: If JSON validation fails
     """
     # TODO: Implement proper JSON schema validation
     # You might want to use jsonschema library for this
@@ -56,12 +69,6 @@ def validate_json_schema(json_data, schema_path):
 def load_noise_properties(noise_properties_path):
     """
     Load noise properties from a given path or use last calibration.
-    
-    Args:
-        noise_properties_path (str): Path to noise properties file
-    
-    Returns:
-        dict: Noise properties JSON
     """
     if noise_properties_path == "last_calibrations":
         # Find the most recent calibration file
@@ -84,15 +91,6 @@ def load_noise_properties(noise_properties_path):
 def create_noise_model(backend, thermal_relaxation, readout_error, gate_error):
     """
     Create a noise model for the given backend and error configurations.
-    
-    Args:
-        backend (CunqaBackend): Quantum backend
-        thermal_relaxation (bool): Enable thermal relaxation
-        readout_error (bool): Enable readout error
-        gate_error (bool): Enable gate error
-    
-    Returns:
-        NoiseModel: Configured noise model
     """
     try:
         noise_model = NoiseModel.from_backend(
@@ -110,15 +108,6 @@ def create_noise_model(backend, thermal_relaxation, readout_error, gate_error):
 def prepare_backend_json(backend, args, noise_model, noise_properties_path):
     """
     Prepare backend JSON with noise model and configuration details.
-    
-    Args:
-        backend (CunqaBackend): Quantum backend
-        args (argparse.Namespace): Parsed command-line arguments
-        noise_model (NoiseModel): Generated noise model
-        noise_properties_path (str): Path to noise properties
-    
-    Returns:
-        dict: Backend configuration JSON
     """
     # Construct description based on enabled error types
     errors = []
@@ -152,7 +141,8 @@ def prepare_backend_json(backend, args, noise_model, noise_properties_path):
             backend_json = json.load(file)
 
         # TODO: validate backend_json
-        #validate_json_schema(backend_json, schema_backend)
+        # schema_backend = os.path.join(CUNQA_PATH, "json_schema", "backend_schema.json")
+        # validate_json_schema(backend_json, schema_backend)
         
         backend_json.update({
             "noise_model": noise_model.to_dict(serializable=True),
@@ -165,10 +155,6 @@ def prepare_backend_json(backend, args, noise_model, noise_properties_path):
 def write_backend_json(backend_json, tmp_file):
     """
     Write backend JSON to a temporary file with file locking.
-    
-    Args:
-        backend_json (dict): Backend configuration JSON
-        tmp_file (str): Path to temporary file
     """
     os.makedirs(os.path.dirname(tmp_file), exist_ok=True)
     
@@ -184,25 +170,20 @@ def write_backend_json(backend_json, tmp_file):
 def main(args=None):
     """
     Main function to process noise properties and generate backend configuration.
-    
-    Args:
-        args (argparse.Namespace, optional): Parsed command-line arguments. 
-                                             If None, parse from sys.argv.
     """
     # Parse arguments if not provided
     if args is None:
         parser = create_parser()
         args = parser.parse_args()
     
-    # TODO: Paths to JSON schemas
+    # Los schemas fijos sí viven en la instalación global (CUNQA_PATH)
     # schema_noise_properties = os.path.join(CUNQA_PATH, "json_schema", "calibrations_schema.json")
-    # schema_backend = os.path.join(CUNQA_PATH, "json_schema", "backend_schema.json")
     
     try:
         # Load and validate noise properties
         noise_properties_json = load_noise_properties(args.noise_properties_path)
         # TODO: validate noise_properties_json
-        #validate_json_schema(noise_properties_json, schema_noise_properties)
+        # validate_json_schema(noise_properties_json, schema_noise_properties)
         
         # Create backend
         backend = CunqaBackend(noise_properties_json=noise_properties_json)
@@ -233,9 +214,14 @@ def main(args=None):
             args.noise_properties_path
         )
         
-        # Generate temporary file path
-        slurm_job_id = os.getenv("SLURM_JOB_ID", "unknown")
-        tmp_file = os.path.join(CUNQA_PATH, f"tmp_noisy_backend_{slurm_job_id}.json")
+        # Guardar en la ruta del argumento (versión antigua) o dinámicamente en el entorno del usuario
+        if args.output_path:
+            tmp_file = args.output_path
+        else:
+            user_dir = get_user_cunqa_dir()
+            slurm_job_id = os.getenv("SLURM_JOB_ID", "unknown")
+            tmp_file = os.path.join(user_dir, f"tmp_noisy_backend_{slurm_job_id}.json")
+            
         backend_json["noise_path"] = tmp_file
         
         # Write backend JSON

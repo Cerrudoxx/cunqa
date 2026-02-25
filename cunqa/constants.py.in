@@ -1,5 +1,16 @@
-QPUS_FILEPATH = "@QPUS_FILEPATH@"
-CUNQA_PATH = "@CUNQA_PATH@"
-LIBS_DIR = "@CMAKE_INSTALL_RPATH@"
+import os
+from pathlib import Path
+
+# Ruta estática global
+CUNQA_PATH = "@CUNQA_FULL_DATA_PATH@"
+INSTALL_PATH = "@CMAKE_INSTALL_PREFIX@"
+
+# Rutas dinámicas locales
+_USER_HOME = Path.home()
+_CUNQA_USER_DIR = _USER_HOME / ".cunqa"
+
+# Rutas finales
+QPUS_FILEPATH = str(_CUNQA_USER_DIR / "qpus.json")
+COMM_FILEPATH = str(_CUNQA_USER_DIR / "communications.json")
 
 REMOTE_GATES = ["send", "recv", "qsend", "qrecv", "expose", "rcontrol"]

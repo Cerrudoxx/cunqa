@@ -37,8 +37,6 @@ endif()
 # Adding C++20 standard as required
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg") # Dani, for profiling with gprof
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 message(STATUS "C++ version ${CXX_STANDARD} configured.")
 message(STATUS "${CMAKE_VERSION}")
 if(${CMAKE_VERSION} VERSION_EQUAL "3.27.6")
@@ -52,18 +50,21 @@ set(COMPILATION_FOR_GPU FALSE)
 set(GPU_ARCH "")
 set(MAX_GPUS_PER_NODE "")
 
-# Check that $STORE exists
-if(NOT DEFINED ENV{STORE})
-    message(FATAL_ERROR "The STORE environment variable is not defined")
-endif()
-set(CUNQA_PATH "$ENV{STORE}/.cunqa")
-set(QPUS_FILEPATH "$ENV{STORE}/.cunqa/qpus.json")
-set(COMM_FILEPATH "$ENV{STORE}/.cunqa/communications.json")
+# =====================================================================
+#  RUTAS DE INSTALACIÓN GLOBALES
+# =====================================================================
+set(CUNQA_DATA_DIR "share/cunqa") 
+
+# Ruta estática donde se instalará el módulo de forma global
+set(CUNQA_FULL_DATA_PATH "${CMAKE_INSTALL_PREFIX}/${CUNQA_DATA_DIR}")
+
+# Variables para inyección en plantillas (.in). QPUS_FILEPATH y COMM_FILEPATH 
+# ahora se manejan de forma dinámica en ejecución en constants.hpp/.py
+set(CUNQA_PATH "${CUNQA_FULL_DATA_PATH}")
+
 include_directories("${CMAKE_BINARY_DIR}/src")
 
-
 # Set INSTALL paths
-# TODO: I put this if 
 if(NOT DEFINED CMAKE_INSTALL_PREFIX OR CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")
     set(CMAKE_INSTALL_PREFIX "$ENV{HOME}" CACHE PATH "Install prefix" FORCE)
 endif()
@@ -72,6 +73,7 @@ message(STATUS "Install location will be: ${CMAKE_INSTALL_PREFIX}")
 set(CMAKE_INSTALL_LIBDIR "lib")
 set(CMAKE_INSTALL_BINDIR "bin")
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+# =====================================================================
 
 # Fine tuning for CESGA machines (pybind11 cannot be found by default)
 set(SYSTEM_NAME $ENV{LMOD_SYSTEM_NAME})
@@ -104,21 +106,15 @@ find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
 # =====================================================================
-#  PARCHE DE BOOST PARA LUSITANIA
-#  Engañamos a mqt-core para que no descargue su propio boost_mp
-#  y utilice la versión del sistema, evitando colisiones de redefinición.
+#  PARCHE BOOST V3: Fuerza Bruta
+#  Añadimos la ruta de Boost de Lusitania directamente a las flags
+#  globales del compilador. MQT-Core lo encontrará siempre.
 # =====================================================================
+include_directories("/lusitania_apps/boost-1.78.0/include")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/lusitania_apps/boost-1.78.0/include")
+# =====================================================================
+
 include(FetchContent)
-set(boost_mp_POPULATED TRUE CACHE BOOL "Prevenir descarga de boost" FORCE)
-if(NOT TARGET boost_mp)
-    add_library(boost_mp INTERFACE)
-    target_link_libraries(boost_mp INTERFACE Boost::boost)
-    target_include_directories(boost_mp INTERFACE 
-        "${Boost_INCLUDE_DIRS}" 
-        "/lusitania_apps/boost-1.78.0/include"
-    )
-endif()
-# =====================================================================
 
 function(find_or_fetch_package PACKAGE_NAME GIT_REPOSITORY VERSION TAG)
   find_package(${PACKAGE_NAME} ${VERSION} QUIET)
@@ -264,20 +260,6 @@ if (DEFINED AER_GPU)
   message(STATUS "Compiling with AER_GPU")
   set(COMPILATION_FOR_GPU TRUE)
   
-  #set(CMAKE_CUDA_COMPILER "/path/to/bin/nvcc")
-  #set(CMAKE_CUDA_COMPILER_ID "NVIDIA")
-  #set(CMAKE_CUDA_COMPILER_VERSION "12.8.0")
-  #set(CMAKE_CUDA_COMPILER_WORKS TRUE)
-  
-  # Architecture           GPUs (examples)        SM
-  # -------------------------------------------------
-  # Volta                  V100                   70
-  # Turing                 T4, RTX 2080           75
-  # Ampere                 A100                   80
-  # Ampere (GA10x)         RTX 30xx               86
-  # Ada Lovelace           RTX 40xx               89
-  # Hopper                 H100                   90
-  
   set(GPU_ARCH 80)
   set(MAX_GPUS_PER_NODE 8) # Dependent on GPU_ARCH and CLUSTER
   set(CMAKE_CUDA_ARCHITECTURES ${GPU_ARCH})
@@ -325,7 +307,6 @@ if(NOT Eigen3_FOUND)
   if(NOT maestroeigen_POPULATED)
       FetchContent_Populate(MaestroEigen)
   endif()
-  #FetchContent_MakeAvailable(MaestroEigen)
   set(EIGEN5_INCLUDE_DIR "${maestroeigen_SOURCE_DIR}") 
 else()
   message(STATUS "Eigen 5.0 found")
@@ -392,12 +373,10 @@ if(BUILD_QULACS_WITH_MPI)
 endif()
 FetchContent_MakeAvailable(qulacs)
 
-
 #  Restore original compiler flags
 set(CMAKE_CXX_FLAGS "${_old_CXX_FLAGS}")
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/utils/logger" "${CMAKE_CURRENT_SOURCE_DIR}/src")
-#include_directories("${Python_INCLUDE_DIRS}" "${MPI_INCLUDE_PATH}")
 
 add_subdirectory(src)
 add_subdirectory(cunqa)

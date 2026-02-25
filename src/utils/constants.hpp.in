@@ -4,17 +4,34 @@
 #include <complex>
 #include <unordered_map>
 #include <string_view>
+#include <string>
+#include <cstdlib> // Necesario para std::getenv
 
 namespace cunqa {
 namespace constants{
+
+// 1. Definimos la función auxiliar para obtener el directorio dinámico.
+// Así puede ser usada tanto aquí como en setup_qpus.cpp
+inline std::string get_user_cunqa_dir() {
+    // Prioridad 1: Clústeres (Lusitania, etc)
+    if (const char* store_env = std::getenv("STORE")) {
+        return std::string(store_env) + "/.cunqa";
+    }
+    // Prioridad 2: Entorno local
+    const char* home_env = std::getenv("HOME");
+    std::string home = home_env ? std::string(home_env) : ".";
+    return home + "/.cunqa";
+}
 
 // This is constexpr because it is employed in __attribute__((constructor))
 // of the logger_client, that is initialized before main (therefore before
 // const std::string parameters are initialized) 
 inline constexpr std::string_view CUNQA_PATH = "@CUNQA_PATH@";
-const std::string QPUS_FILEPATH = "@QPUS_FILEPATH@";
-const std::string COMM_FILEPATH = "@COMM_FILEPATH@";
 const std::string INSTALL_PATH = "@CMAKE_INSTALL_PREFIX@";
+
+// 2. Usamos la función para inicializar las variables
+inline const std::string QPUS_FILEPATH = get_user_cunqa_dir() + "/qpus.json";
+inline const std::string COMM_FILEPATH = get_user_cunqa_dir() + "/communications.json";
 
 
 enum INSTRUCTIONS {
@@ -222,10 +239,9 @@ const std::vector<std::string> BASIS_GATES = {
 const std::string cafe = R"(                                                                                                
                                                             ##*%                                                                                                
                                                           ###%###                                                                                               
-                                                      *  ###%%%%%                                                                                               
+                                                      * ###%%%%%                                                                                               
                                                   #%  #%%#%%%%%%%                                                                                               
-                                                  *%%%######%%%##%%%%%%#****                                                                                    
-                                                  *###############%%%%%%%%##%##                                                                                 
+                                                  *%%%######%%%##%%%%%%#**** *###############%%%%%%%%##%##                                                                                 
                                                   %%%%##%**#*%######%%%#%%#####%%#                                                                             
                                                   *#%#%#%##%*%**%###%######%####%%%###                                #%%%%%%%%%                                
                                                    +#%##%%####*%%%%###%##*#####%%#%%#%###                          #%%%%%%%%%@%%###                             
@@ -234,7 +250,7 @@ const std::string cafe = R"(
                                                         %#*#@%#%%%%%#%%%##%####*####*#*#***#%#%##               #%%%*%%%%%%%%@@%%%%@%#                          
                                                         %##%%%%%@@%%@%%%%%%####%%#********####*##*%#         ##%%%%%%%%#%%%#%%%@%@@%%%                          
                                                          ##%%%%%%%@@%%%%%%%%%%%%####%#######%#####%#%#       %%%%%%%%%%%%%%%%#%@@%@%@%%                         
-                                                          #%%%%%#@%@%%%%%%%%%%%%@%%%###%%#%##%##%*#####*   #%%%@%%%%%%%##%%@%@@@@%%@%%@                         
+                                                          #%%%%%#@%@%%%%%%%%%%%%@%%%###%%#%##%##%*#####* #%%%@%%%%%%%##%%@%@@@@%%@%%@                         
                                                                  #%%@%%%%%%%%@%@%@@%%%%%%%@%#%%#%###*##%#%%%%%%%%%%###%%%%%@@@@@@@%@@@%                         
                                                                   %%%@@@@@%@@@@@@@@%%%%#%#%%%####%%####%%%@%%%%%##%%%#%%@@%@@%%%%%@@%@%                         
                                                                    %%%%@@%@@@%%@%%%#%%%%%#####%########%@%%@@%%%%%%%%%%@%%%%%%%%%*@@%@%                         
@@ -248,9 +264,7 @@ const std::string cafe = R"(
                                                    %%%+=+===--=+==*%##====+=*+**++***%####**####%%%%%%%%#%%@@@@@%%%%##                                          
                                                  ###+======-::..-==++%%*--=#%%#*#**+#+%%%*##%####%%%%%%%%%%%%%%%%%%%%%                                          
                                                 %%==-=-==-=------::--=+%%%%%%%   *#*+*+*####%%%%%%%%%%##%%%%%###%%%                                             
-                                              %%+=+**=+=-+++++=++=====+=*#%%#        #**+%%%%%%%%%%%%%#%%%%##*#*                                                
-                                            +*#*#%%*++++++++++++++*==#%%%%%*         -#*#%%%%%%%%%%%%%%%%#* %*                                                  
-                                           *#*-%#%%%%%@@@@@@@@@@@@@%%#@=#%%           #%#%%%@@@@%%%%%%%%#*+                                                     
+                                              %%+=+**=+=-+++++=++=====+=*#%%#        #**+%%%%%%%%%%%%%#%%%%##*#* +*#*#%%*++++++++++++++*==#%%%%%* -#*#%%%%%%%%%%%%%%%%#* %* *#*-%#%%%%%@@@@@@@@@@@@@%%#@=#%%           #%#%%%@@@@%%%%%%%%#*+                                                     
                                           +**=  #%%%@@@@@@@@@@@@@%@@%%*-#@            #%#%#%%%%%%##%%%%#%                                                       
                                           ++=   #*#%%%####@@@@@@@@@%##%@%%             %%%%@%%#%%%###%                                                          
                                          =++=    *##########%@%@@%%%#%#%#             %%%%%@%@%@%                                                               
@@ -260,8 +274,7 @@ const std::string cafe = R"(
                                        .--            ::+#*==%#*#                          +***.                                                                
                                                   @@     .+#*=                             +**#:                                                                
                                                  @@                                        +###.                                                              
-                                                                                           =###****                                                           
-                      @@@@@@    @@   @@@@@@@ @@@@@@@  @@@@@@                              :=###=                                                              
+                                                                                           =###**** @@@@@@    @@   @@@@@@@ @@@@@@@  @@@@@@                              :=###=                                                              
                       @@       @@@@  @@      @@           @@                         -+*+=*####-                                                               
                       @@      @@  @@ @@@@@@@ @@@@@@@    @@@                      =+#######%%##**#-                                                              
                       @@      @@  @@ @@@     @@         @@                               %+##  -##:                                                             

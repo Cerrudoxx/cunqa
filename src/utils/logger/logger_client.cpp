@@ -1,6 +1,7 @@
 #include "logger.hpp"
 #include <string>
 #include <iostream>
+#include <cstdlib>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 
@@ -15,7 +16,12 @@ __attribute__((constructor)) void initializeLogger() {
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console_sink->set_level(spdlog::level::warn);
 
-    const std::string log_path = std::string(cunqa::constants::CUNQA_PATH) + "/logs/logging.log";
+    // =========================================================================
+    //  USAMOS LA FUNCIÓN DINÁMICA (HPC-READY)
+    //  Esto garantiza que el log se guarda en $STORE/.cunqa o $HOME/.cunqa
+    // =========================================================================
+    const std::string log_path = cunqa::constants::get_user_cunqa_dir() + "/client_debug.log";
+    
     auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(log_path, 1024*1024, 5, false);
     file_sink->set_level(spdlog::level::debug);
 
