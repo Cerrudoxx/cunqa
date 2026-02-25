@@ -18,8 +18,8 @@ elif [ $LMOD_SYSTEM_NAME == "FT3" ]; then
 
     conda deactivate
 else
-    echo "You need to specify the modules for your cluster"
-    # PUT YOUR MODULES HERE
+    # echo "You need to specify the modules for your cluster"
+    module load gcc/gcc-11.2.0 cmake/cmake-3.23 openblas/openblas-0.3.24 openmpi/openmpi-4.1.2-gcc11.2.0 python/python-3.10 ccache
 fi
 
 if [ -n "$1" ]; then

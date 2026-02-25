@@ -2,6 +2,32 @@ cmake_minimum_required(VERSION 3.21)
 
 project(CUNQA VERSION 1.2.0 LANGUAGES CXX)
 
+# =====================================================================
+#  PARCHE DE ARQUITECTURA PARA LUSITANIA (Sandy Bridge / CPU Antiguas)
+# =====================================================================
+set(NATIVE_ARCH OFF CACHE BOOL "Force disable MQT native" FORCE)
+set(DDSIM_NATIVE_ARCH OFF CACHE BOOL "Force disable DDSim native" FORCE)
+set(ENABLE_AVX2 OFF CACHE BOOL "Disable AVX2 usage in Aer" FORCE)
+set(ENABLE_NATIVE OFF CACHE BOOL "Generic native disable" FORCE)
+
+set(FLAGS_BLACKLIST 
+    "-march=x86-64"      
+    "-mtune=sandybridge" 
+    "-mno-avx2"          
+    "-mno-fma"       
+    "-mno-bmi"           
+    "-mno-bmi2"          
+    "-mno-f16c"          
+    "-mno-rdrnd"         
+    "-mno-movbe"         
+    "-mno-abm" 
+    "-mno-fsgsbase"      
+)
+
+add_compile_options(${FLAGS_BLACKLIST})
+add_link_options(${FLAGS_BLACKLIST})
+# =====================================================================
+
 message(STATUS "CMAKE BUILD TYPE: ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE CONFIGURATION TYPE: ${CMAKE_CONFIGURATION_TYPES}")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -77,7 +103,22 @@ find_package(Boost REQUIRED)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
+# =====================================================================
+#  PARCHE DE BOOST PARA LUSITANIA
+#  Engañamos a mqt-core para que no descargue su propio boost_mp
+#  y utilice la versión del sistema, evitando colisiones de redefinición.
+# =====================================================================
 include(FetchContent)
+set(boost_mp_POPULATED TRUE CACHE BOOL "Prevenir descarga de boost" FORCE)
+if(NOT TARGET boost_mp)
+    add_library(boost_mp INTERFACE)
+    target_link_libraries(boost_mp INTERFACE Boost::boost)
+    target_include_directories(boost_mp INTERFACE 
+        "${Boost_INCLUDE_DIRS}" 
+        "/lusitania_apps/boost-1.78.0/include"
+    )
+endif()
+# =====================================================================
 
 function(find_or_fetch_package PACKAGE_NAME GIT_REPOSITORY VERSION TAG)
   find_package(${PACKAGE_NAME} ${VERSION} QUIET)
