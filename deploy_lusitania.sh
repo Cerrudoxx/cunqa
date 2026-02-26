@@ -78,16 +78,6 @@ cmake -S . -B build/ \
     -DNATIVE_ARCH=OFF \
     -DDDSIM_NATIVE_ARCH=OFF
 
-# ==============================================================================
-# 5. EL ENGAÑO A MQT-CORE (Reemplazo por Symlink)
-# Sustituimos la carpeta que CMake acaba de descargar por un acceso directo
-# al Boost del sistema para evitar errores de múltiple definición.
-# ==============================================================================
-echo ">>> Sincronizando versiones de Boost..."
-rm -rf build/_deps/boost_mp-src/include/boost
-mkdir -p build/_deps/boost_mp-src/include
-ln -s /lusitania_apps/boost-1.78.0/include/boost build/_deps/boost_mp-src/include/boost
-
 # 6. COMPILACIÓN E INSTALACIÓN
 echo ">>> Compilando (Paralelismo: $(nproc) cores)..."
 cmake --build build/ -j $(nproc)

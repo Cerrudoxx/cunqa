@@ -75,6 +75,7 @@ set(CMAKE_INSTALL_BINDIR "bin")
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 # =====================================================================
 
+
 # Fine tuning for CESGA machines (pybind11 cannot be found by default)
 set(SYSTEM_NAME $ENV{LMOD_SYSTEM_NAME})
 if(NOT SYSTEM_NAME OR NOT (SYSTEM_NAME STREQUAL "QMIO" OR SYSTEM_NAME STREQUAL "FT3"))
@@ -106,15 +107,22 @@ find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
 # =====================================================================
-#  PARCHE BOOST V3: Fuerza Bruta
-#  Añadimos la ruta de Boost de Lusitania directamente a las flags
-#  globales del compilador. MQT-Core lo encontrará siempre.
+#  PARCHE DE BOOST PARA LUSITANIA (VERSIÓN BULLETPROOF)
 # =====================================================================
-include_directories("/lusitania_apps/boost-1.78.0/include")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/lusitania_apps/boost-1.78.0/include")
-# =====================================================================
-
 include(FetchContent)
+
+# 1. Cubrimos a mqt-core definiendo las variables explícitas
+set(boost_mp_SOURCE_DIR "/lusitania_apps/boost-1.78.0" CACHE INTERNAL "")
+set(boost_mp_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/_deps/boost_mp-build" CACHE INTERNAL "")
+set(boost_mp_POPULATED TRUE CACHE INTERNAL "")
+
+# 2. Creamos el target que MQT-Core buscará enlazar
+if(NOT TARGET boost_mp)
+    add_library(boost_mp INTERFACE)
+    target_link_libraries(boost_mp INTERFACE Boost::boost)
+    target_include_directories(boost_mp INTERFACE "/lusitania_apps/boost-1.78.0/include")
+endif()
+# =====================================================================
 
 function(find_or_fetch_package PACKAGE_NAME GIT_REPOSITORY VERSION TAG)
   find_package(${PACKAGE_NAME} ${VERSION} QUIET)
@@ -361,7 +369,7 @@ install(TARGETS maestro DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 # =====================================================================
 FetchContent_Declare(
     qulacs
-    GIT_REPOSITORY "git@github.com:usendon/usendon_qulacs.git"
+    GIT_REPOSITORY "git@github.com:usendon/qulacs.git"
     GIT_TAG "228f617b9e31007b54488f467c031ebbf07efcdb"
 )
 
