@@ -26,7 +26,8 @@ module load gcc/gcc-11.2.0 \
             openblas/openblas-0.3.24 \
             openmpi/openmpi-4.1.2-gcc11.2.0 \
             python/python-3.10 \
-            boost/boost-1.78.0
+            boost/boost-1.78.0 \
+	    ccache/ccache-4.8.3
 set -e
 
 # ==============================================================================

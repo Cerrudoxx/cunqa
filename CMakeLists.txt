@@ -37,6 +37,8 @@ endif()
 # Adding C++20 standard as required
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg") # Dani, for profiling with gprof
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 message(STATUS "C++ version ${CXX_STANDARD} configured.")
 message(STATUS "${CMAKE_VERSION}")
 if(${CMAKE_VERSION} VERSION_EQUAL "3.27.6")
@@ -102,27 +104,10 @@ endif()
 find_package(Threads REQUIRED)
 find_package(MPI REQUIRED)
 find_package(OpenMP REQUIRED COMPONENTS CXX)
-find_package(Boost REQUIRED)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
-# =====================================================================
-#  PARCHE DE BOOST PARA LUSITANIA (VERSIÓN BULLETPROOF)
-# =====================================================================
 include(FetchContent)
-
-# 1. Cubrimos a mqt-core definiendo las variables explícitas
-set(boost_mp_SOURCE_DIR "/lusitania_apps/boost-1.78.0" CACHE INTERNAL "")
-set(boost_mp_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/_deps/boost_mp-build" CACHE INTERNAL "")
-set(boost_mp_POPULATED TRUE CACHE INTERNAL "")
-
-# 2. Creamos el target que MQT-Core buscará enlazar
-if(NOT TARGET boost_mp)
-    add_library(boost_mp INTERFACE)
-    target_link_libraries(boost_mp INTERFACE Boost::boost)
-    target_include_directories(boost_mp INTERFACE "/lusitania_apps/boost-1.78.0/include")
-endif()
-# =====================================================================
 
 function(find_or_fetch_package PACKAGE_NAME GIT_REPOSITORY VERSION TAG)
   find_package(${PACKAGE_NAME} ${VERSION} QUIET)
@@ -167,6 +152,20 @@ find_or_fetch_package(
   "v1.16.0"
 )
 install(TARGETS spdlog DESTINATION "${CMAKE_INSTALL_LIBDIR}") # does this fails with FindPackage??
+
+
+# =====================================================================
+#  TASKFLOW (Evitar error 504 de red forzando Git Clone por HTTPS)
+# =====================================================================
+FetchContent_Declare(
+    taskflow
+    GIT_REPOSITORY "https://github.com/taskflow/taskflow.git"
+    GIT_TAG "v3.7.0"
+)
+set(TF_BUILD_EXAMPLES OFF CACHE BOOL "Build taskflow examples" FORCE)
+set(TF_BUILD_TESTS OFF CACHE BOOL "Build taskflow tests" FORCE)
+FetchContent_MakeAvailable(taskflow)
+
 
 # =====================================================================
 #  MQT-DDSIM - quantum circuit simulator
@@ -267,6 +266,20 @@ endif()
 if (DEFINED AER_GPU)
   message(STATUS "Compiling with AER_GPU")
   set(COMPILATION_FOR_GPU TRUE)
+  
+  #set(CMAKE_CUDA_COMPILER "/path/to/bin/nvcc")
+  #set(CMAKE_CUDA_COMPILER_ID "NVIDIA")
+  #set(CMAKE_CUDA_COMPILER_VERSION "12.8.0")
+  #set(CMAKE_CUDA_COMPILER_WORKS TRUE)
+  
+  # Architecture           GPUs (examples)        SM
+  # -------------------------------------------------
+  # Volta                  V100                   70
+  # Turing                 T4, RTX 2080           75
+  # Ampere                 A100                   80
+  # Ampere (GA10x)         RTX 30xx               86
+  # Ada Lovelace           RTX 40xx               89
+  # Hopper                 H100                   90
   
   set(GPU_ARCH 80)
   set(MAX_GPUS_PER_NODE 8) # Dependent on GPU_ARCH and CLUSTER
@@ -380,6 +393,7 @@ if(BUILD_QULACS_WITH_MPI)
   set(USE_MPI ON CACHE BOOL "" FORCE)
 endif()
 FetchContent_MakeAvailable(qulacs)
+
 
 #  Restore original compiler flags
 set(CMAKE_CXX_FLAGS "${_old_CXX_FLAGS}")
