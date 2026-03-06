@@ -1,0 +1,1 @@
+slurmstepd: error: *** JOB 718114 ON s01r3b18 CANCELLED AT 2026-01-14T12:41:14 ***

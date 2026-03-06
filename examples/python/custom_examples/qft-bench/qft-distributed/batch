@@ -1,0 +1,53 @@
+#!/bin/bash
+#SBATCH --nodes=2
+#SBATCH --ntasks=2           # 1 tarea por nodo (para el manager de la QPU)
+#SBATCH --cpus-per-task=15   # 15 cores para cada QPU
+#SBATCH --job-name=cunqa_manual
+#SBATCH --partition=lusitania
+#SBATCH --exclusive
+#SBATCH --output=salida_manual_%j.txt
+#SBATCH --error=error_manual_%j.txt
+
+# --- ENTORNO (Igual que siempre) ---
+MI_PYTHON="/lusitania_homes/CenitS/jesus.cerrudo/.conda/envs/cunqa-bench/bin/python"
+module purge
+module load gcc/gcc-11.2.0 cmake/cmake-3.23 openblas/openblas-0.3.24 openmpi/openmpi-4.1.2-gcc11.2.0 libraries/libffi-devel-8.1
+CUNQA_ROOT="/lusitania_apps/python/python-3.10-cunqa-ex"
+export PYTHONPATH="${CUNQA_ROOT}/lib/python3.10/site-packages:${PYTHONPATH}"
+export LD_LIBRARY_PATH="${CUNQA_ROOT}/lib:${LD_LIBRARY_PATH}"
+export PATH="${PATH}:${CUNQA_ROOT}/bin"
+
+# --- INFRAESTRUCTURA MANUAL ---
+# Generamos un archivo de configuración para que Python sepa dónde están las QPUs
+echo "Generando configuración manual..."
+
+# Obtenemos los nombres de los nodos asignados
+NODELIST=$(scontrol show hostnames $SLURM_JOB_NODELIST)
+NODE_ARRAY=($NODELIST)
+
+# Creamos el JSON de infraestructura (simulado)
+cat <<EOF > manual_infrastructure.json
+{
+    "qpus": [
+        { "name": "QPU_A", "ip": "${NODE_ARRAY[0]}", "port": 8001 },
+        { "name": "QPU_B", "ip": "${NODE_ARRAY[1]}", "port": 8002 }
+    ]
+}
+EOF
+
+# --- LANZAR DEMONIOS CUNQA (LO QUE HACÍA QRAISE) ---
+# Lanzamos setup_qpus manualmente en cada nodo usando srun.
+# Al usar srun, HEREDAN LAS LIBRERÍAS y VARIABLES.
+echo "Lanzando QPUs en segundo plano..."
+srun --ntasks=2 --ntasks-per-node=1 setup_qpus --manual-config &
+PID_QPUS=$!
+
+sleep 10 # Damos tiempo a que arranquen
+
+# --- EJECUTAR PYTHON ---
+echo "Ejecutando script principal..."
+# Le pasamos un flag nuevo --manual para que no use qraise
+$MI_PYTHON -u cunqa_main.py 40 50 --manual-config "manual_infrastructure.json"
+
+# --- LIMPIEZA ---
+kill $PID_QPUS

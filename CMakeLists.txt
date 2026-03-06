@@ -104,6 +104,7 @@ endif()
 find_package(Threads REQUIRED)
 find_package(MPI REQUIRED)
 find_package(OpenMP REQUIRED COMPONENTS CXX)
+find_package(Boost REQUIRED)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
@@ -151,7 +152,7 @@ find_or_fetch_package(
   "1.16.0"
   "v1.16.0"
 )
-install(TARGETS spdlog DESTINATION "${CMAKE_INSTALL_LIBDIR}") # does this fails with FindPackage??
+install(TARGETS spdlog DESTINATION "${CMAKE_INSTALL_LIBDIR}") 
 
 
 # =====================================================================

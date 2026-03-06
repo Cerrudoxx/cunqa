@@ -27,7 +27,7 @@ module load gcc/gcc-11.2.0 \
             openmpi/openmpi-4.1.2-gcc11.2.0 \
             python/python-3.10 \
             boost/boost-1.78.0 \
-	    ccache/ccache-4.8.3
+            ccache/ccache-4.8.3
 set -e
 
 # ==============================================================================
@@ -64,12 +64,16 @@ export CC="mpicc"
 export CXX="mpicxx"
 export BLA_VENDOR=OpenBLAS
 
-# 3. LIMPIEZA PREVIA
+# ==============================================================================
+# 3. LIMPIEZA PREVIA (CRUCIAL PARA EVITAR CHOQUES DE VERSIÓN DE BOOST)
+# ==============================================================================
 echo ">>> Limpiando directorio de construcción..."
 rm -rf build/
 mkdir -p build/
 
+# ==============================================================================
 # 4. LANZAMIENTO DE CMAKE (Fase de configuración y descargas)
+# ==============================================================================
 echo ">>> Configurando CMake..."
 cmake -S . -B build/ \
     -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
@@ -79,7 +83,9 @@ cmake -S . -B build/ \
     -DNATIVE_ARCH=OFF \
     -DDDSIM_NATIVE_ARCH=OFF
 
-# 6. COMPILACIÓN E INSTALACIÓN
+# ==============================================================================
+# 5. COMPILACIÓN E INSTALACIÓN
+# ==============================================================================
 echo ">>> Compilando (Paralelismo: $(nproc) cores)..."
 cmake --build build/ -j $(nproc)
 

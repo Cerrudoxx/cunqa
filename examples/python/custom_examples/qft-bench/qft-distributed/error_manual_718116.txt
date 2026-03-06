@@ -1,0 +1,10 @@
+srun: error: s01r2b07: task 0: Exited with exit code 127
+/lusitania_apps/python/python-3.10-cunqa-ex/bin/setup_qpus: error while loading shared libraries: libpython3.10.so.1.0: cannot open shared object file: No such file or directory
+srun: error: s01r2b08: task 1: Exited with exit code 127
+/lusitania_apps/python/python-3.10-cunqa-ex/bin/setup_qpus: error while loading shared libraries: libpython3.10.so.1.0: cannot open shared object file: No such file or directory
+usage: cunqa_main.py [-h] [--nodes NODES] [--mem-per-qpu MEM_PER_QPU]
+                     [--cores CORES] [--qpus-per-node QPUS_PER_NODE]
+                     [--no-ram] [--no-cpu]
+                     n num_iterations
+cunqa_main.py: error: unrecognized arguments: --manual-config manual_infrastructure.json
+/var/slurm/job718116/slurm_script: line 53: kill: (19758) - No existe el proceso
