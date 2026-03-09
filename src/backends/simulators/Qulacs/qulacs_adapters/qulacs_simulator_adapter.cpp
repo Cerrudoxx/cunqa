@@ -119,9 +119,9 @@ std::string execute_shot_(
     {
         const cunqa::JSON& inst = instruction.empty() ? *T.it : instruction;
 
-        std::vector<int> qubits;
+        std::vector<unsigned int> qubits;
         if (inst.contains("qubits"))
-            qubits = inst.at("qubits").get<std::vector<int>>();
+            qubits = inst.at("qubits").get<std::vector<unsigned int>>();
         auto inst_type = cunqa::constants::INSTRUCTIONS_MAP.at(inst.at("name").get<std::string>());
 
         switch (inst_type)
@@ -147,6 +147,9 @@ std::string execute_shot_(
                 
             break;
         }
+        case cunqa::constants::ID:
+            gate::Identity(qubits[0] + T.zero_qubit)->update_quantum_state(&state);
+            break;
         case cunqa::constants::X:
             gate::X(qubits[0] + T.zero_qubit)->update_quantum_state(&state);
             break;
@@ -159,25 +162,28 @@ std::string execute_shot_(
         case cunqa::constants::H:
             gate::H(qubits[0] + T.zero_qubit)->update_quantum_state(&state);
             break;
-        case cunqa::constants::SDAG:
+        case cunqa::constants::S:
+            gate::S(qubits[0] + T.zero_qubit)->update_quantum_state(&state);
+            break;
+        case cunqa::constants::SDG:
             gate::Sdag(qubits[0] + T.zero_qubit)->update_quantum_state(&state);
             break;
         case cunqa::constants::T:
             gate::T(qubits[0] + T.zero_qubit)->update_quantum_state(&state);
             break;
-        case cunqa::constants::TDAG:
+        case cunqa::constants::TDG:
             gate::Tdag(qubits[0] + T.zero_qubit)->update_quantum_state(&state);
             break;
         case cunqa::constants::SX:
             gate::sqrtX(qubits[0] + T.zero_qubit)->update_quantum_state(&state);
             break;
-        case cunqa::constants::SXDAG:
+        case cunqa::constants::SXDG:
             gate::sqrtXdag(qubits[0] + T.zero_qubit)->update_quantum_state(&state);
             break;
         case cunqa::constants::SY:
             gate::sqrtY(qubits[0] + T.zero_qubit)->update_quantum_state(&state);
             break;
-        case cunqa::constants::SYDAG:
+        case cunqa::constants::SYDG:
             gate::sqrtYdag(qubits[0] + T.zero_qubit)->update_quantum_state(&state);
             break;
         case cunqa::constants::P0:
@@ -190,19 +196,6 @@ std::string execute_shot_(
         {
             auto params = inst.at("params").get<std::vector<double>>();
             gate::U1(qubits[0] + T.zero_qubit, params[0])->update_quantum_state(&state);
-            break;
-        }
-        case cunqa::constants::U2: 
-        {
-            auto params = inst.at("params").get<std::vector<double>>();
-            gate::U2(qubits[0] + T.zero_qubit, params[0], params[1])->update_quantum_state(&state);
-            break;
-        }
-        case cunqa::constants::U3: 
-        case cunqa::constants::U:
-        {
-            auto params = inst.at("params").get<std::vector<double>>();
-            gate::U3(qubits[0] + T.zero_qubit, params[0], params[1], params[2])->update_quantum_state(&state);
             break;
         }
         case cunqa::constants::RX: 
@@ -241,6 +234,36 @@ std::string execute_shot_(
             gate::RotInvZ(qubits[0] + T.zero_qubit, params[0])->update_quantum_state(&state);
             break;
         }
+        case cunqa::constants::ROTX: 
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            gate::RotX(qubits[0] + T.zero_qubit, params[0])->update_quantum_state(&state);
+            break;
+        }
+        case cunqa::constants::ROTY: 
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            gate::RotY(qubits[0] + T.zero_qubit, params[0])->update_quantum_state(&state);
+            break;
+        }
+        case cunqa::constants::ROTZ: 
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            gate::RotZ(qubits[0] + T.zero_qubit, params[0])->update_quantum_state(&state);
+            break;
+        }
+        case cunqa::constants::U2: 
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            gate::U2(qubits[0] + T.zero_qubit, params[0], params[1])->update_quantum_state(&state);
+            break;
+        }
+        case cunqa::constants::U3: 
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            gate::U3(qubits[0] + T.zero_qubit, params[0], params[1], params[2])->update_quantum_state(&state);
+            break;
+        }
         case cunqa::constants::CX:
         {
             UINT control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
@@ -261,6 +284,116 @@ std::string execute_shot_(
         case cunqa::constants::SWAP:
         {
             gate::SWAP(qubits[0] + T.zero_qubit, qubits[1] + T.zero_qubit)->update_quantum_state(&state);
+            break;
+        }
+        case cunqa::constants::FUSEDSWAP:
+        {
+            auto block_size = inst.at("block_size").get<unsigned int>();
+            gate::FusedSWAP(qubits[0] + T.zero_qubit, qubits[1] + T.zero_qubit, block_size)->update_quantum_state(&state);
+            break;
+        }
+        case cunqa::constants::MULTIPAULI:
+        {
+            auto pauli_id_list = inst.at("pauli_id_list").get<std::vector<unsigned int>>();
+            std::vector<unsigned int> target_qubits;
+            for (int i = 0; i < qubits.size(); i++) {
+                target_qubits[i] = qubits[i] + T.zero_qubit;
+            }
+            gate::Pauli(target_qubits, pauli_id_list)->update_quantum_state(&state);
+            break;
+        }
+        case cunqa::constants::MULTIPAULIROTATION:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            auto pauli_id_list = inst.at("pauli_id_list").get<std::vector<unsigned int>>();
+            std::vector<unsigned int> target_qubits;
+            for (int i = 0; i < qubits.size(); i++) {
+                target_qubits[i] = qubits[i] + T.zero_qubit;
+            }
+            gate::PauliRotation(target_qubits, pauli_id_list, params[0])->update_quantum_state(&state);
+            break;
+        }
+        case cunqa::constants::DENSEMATRIX:
+        case cunqa::constants::SPARSEMATRIX:
+        case cunqa::constants::DIAGONAL:
+        {   
+            LOGGER_ERROR("DenseMatrix, SparseMatrix and DiagonalMatrix not supported yet.");
+            break;
+        }
+        case cunqa::constants::RANDOMUNITARY:
+        {
+            if (inst.contains("seed")) {
+                auto seed = inst.at("seed").get<unsigned int>();
+                gate::RandomUnitary(qubits, seed)->update_quantum_state(&state);
+            } else {
+                gate::RandomUnitary(qubits)->update_quantum_state(&state);
+            }
+            break;
+        }
+        case cunqa::constants::BITFLIPNOISE:
+        {
+            auto prob = inst.at("prob").get<double>();
+            if (inst.contains("seed")) {
+                auto seed = inst.at("seed").get<unsigned int>();
+                gate::BitFlipNoise(qubits[0], prob, seed)->update_quantum_state(&state);
+            } else {
+                gate::BitFlipNoise(qubits[0], prob)->update_quantum_state(&state);
+            }
+            break;
+        }
+        case cunqa::constants::DEPHASINGNOISE:
+        {
+            auto prob = inst.at("prob").get<double>();
+            if (inst.contains("seed")) {
+                auto seed = inst.at("seed").get<unsigned int>();
+                gate::DephasingNoise(qubits[0], prob, seed)->update_quantum_state(&state);
+            } else {
+                gate::DephasingNoise(qubits[0], prob)->update_quantum_state(&state);
+            }
+            break;
+        }
+        case cunqa::constants::INDEPENDENTXZNOISE:
+        {
+            auto prob = inst.at("prob").get<double>();
+            if (inst.contains("seed")) {
+                auto seed = inst.at("seed").get<unsigned int>();
+                gate::IndependentXZNoise(qubits[0], prob, seed)->update_quantum_state(&state);
+            } else {
+                gate::IndependentXZNoise(qubits[0], prob)->update_quantum_state(&state);
+            }
+            break;
+        }
+        case cunqa::constants::DEPOLARIZINGNOISE:
+        {
+            auto prob = inst.at("prob").get<double>();
+            if (inst.contains("seed")) {
+                auto seed = inst.at("seed").get<unsigned int>();
+                gate::DepolarizingNoise(qubits[0], prob, seed)->update_quantum_state(&state);
+            } else {
+                gate::DepolarizingNoise(qubits[0], prob)->update_quantum_state(&state);
+            }
+            break;
+        }
+        case cunqa::constants::TWOQUBITDEPOLARIZINGNOISE:
+        {
+            auto prob = inst.at("prob").get<double>();
+            if (inst.contains("seed")) {
+                auto seed = inst.at("seed").get<unsigned int>();
+                gate::TwoQubitDepolarizingNoise(qubits[0], qubits[1], prob, seed)->update_quantum_state(&state);
+            } else {
+                gate::TwoQubitDepolarizingNoise(qubits[0], qubits[1], prob)->update_quantum_state(&state);
+            }
+            break;
+        }
+        case cunqa::constants::AMPLITUDEDAMPINGNOISE:
+        {
+            auto prob = inst.at("prob").get<double>();
+            if (inst.contains("seed")) {
+                auto seed = inst.at("seed").get<unsigned int>();
+                gate::AmplitudeDampingNoise(qubits[0], prob, seed)->update_quantum_state(&state);
+            } else {
+                gate::AmplitudeDampingNoise(qubits[0], prob)->update_quantum_state(&state);
+            }
             break;
         }
         case cunqa::constants::SEND:
@@ -372,7 +505,7 @@ std::string execute_shot_(
         }
         case cunqa::constants::RCONTROL:
         {
-            if (!G.qc_meas.contains(inst.at("qpus")[0])) {
+            if (!G.qc_meas.contains(inst.at("qpus")[0]) || G.qc_meas[inst.at("qpus")[0]].empty()) {
                 T.blocked = true;
                 return;
             }
@@ -394,6 +527,7 @@ std::string execute_shot_(
             G.qc_meas[T.id].push(result);
 
             Ts[inst.at("qpus")[0]].blocked = false;
+            T.blocked = false;
             break;
         }
         default:
@@ -406,8 +540,12 @@ std::string execute_shot_(
         G.ended = true;
         for (auto& [id, T]: Ts)
         {
-            if (T.finished || T.blocked)
+            if (T.finished)
                 continue;
+            else if(T.blocked) {
+                G.ended = false;
+                continue;
+            }
 
             apply_next_instr(T, {});
 
@@ -438,6 +576,7 @@ namespace sim {
 
 JSON QulacsSimulatorAdapter::simulate(const Backend* backend)
 {
+    LOGGER_DEBUG("Qulacs usual simulation");
     try {
         auto quantum_task = qc.quantum_tasks[0];
 
@@ -456,10 +595,6 @@ JSON QulacsSimulatorAdapter::simulate(const Backend* backend)
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float> duration = end - start;
         float time_taken = duration.count();
-
-        for (auto& sample : samples) {
-            std::cout << sample << ", \n";
-        }
 
         JSON counts = convert_to_counts(samples, n_qubits);
 
@@ -482,6 +617,7 @@ JSON QulacsSimulatorAdapter::simulate(const Backend* backend)
 
 JSON QulacsSimulatorAdapter::simulate(comm::ClassicalChannel* classical_channel)
 {
+    LOGGER_DEBUG("Qulacs dynamic simulation");
     std::map<std::string, std::size_t> meas_counter;
     
     auto shots = qc.quantum_tasks[0].config.at("shots").get<std::size_t>();

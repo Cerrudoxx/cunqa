@@ -22,30 +22,81 @@ const std::unordered_map<int, OpType> MUNICH_INSTRUCTIONS_MAP = {
     // MEASURE
     {cunqa::constants::MEASURE, OpType::Measure},
 
-    // ONE GATE NO PARAM
+    // ONE QUBIT NO PARAM
     {cunqa::constants::ID, OpType::I},
     {cunqa::constants::X, OpType::X},
     {cunqa::constants::Y, OpType::Y},
     {cunqa::constants::Z, OpType::Z},
     {cunqa::constants::H, OpType::H},
+    {cunqa::constants::S, OpType::S},
+    {cunqa::constants::SDG, OpType::Sdg},
     {cunqa::constants::SX, OpType::SX},
+    {cunqa::constants::SXDG, OpType::SXdg},
+    {cunqa::constants::T, OpType::T},
+    {cunqa::constants::TDG, OpType::Tdg},
+    {cunqa::constants::V, OpType::V},
+    {cunqa::constants::VDG, OpType::Vdg},
 
-    // ONE GATE PARAM
+    // ONE QUBIT ONE PARAM
     {cunqa::constants::RX, OpType::RX},
     {cunqa::constants::RY, OpType::RY},
     {cunqa::constants::RZ, OpType::RZ},
+    {cunqa::constants::GLOBALP, OpType::GPhase},
+    {cunqa::constants::P, OpType::P},
+    {cunqa::constants::U1, OpType::P},
 
-    // TWO GATE NO PARAM
+    // ONE QUBIT TWO PARAM
+    {cunqa::constants::U2, OpType::U2},
+
+    // ONE QUBIT THREE PARAM 
+    {cunqa::constants::U3, OpType::U},
+
+    // TWO QUBIT NO PARAM
     {cunqa::constants::CX, OpType::X},
     {cunqa::constants::CY, OpType::Y},
     {cunqa::constants::CZ, OpType::Z},
+    {cunqa::constants::CH, OpType::H},
+    {cunqa::constants::CSX, OpType::SX},
+    {cunqa::constants::CS, OpType::S},
+    {cunqa::constants::CSDG, OpType::Sdg},
     {cunqa::constants::SWAP, OpType::SWAP},
+    {cunqa::constants::ISWAP, OpType::iSWAP},
     {cunqa::constants::ECR, OpType::ECR},
+    {cunqa::constants::DCX, OpType::DCX},
 
-    // TWO GATE PARAM
+    // TWO QUBIT ONE PARAM
+    {cunqa::constants::CU1, OpType::P},
+    {cunqa::constants::CP, OpType::P},
     {cunqa::constants::CRX, OpType::RX},
     {cunqa::constants::CRY, OpType::RY},
-    {cunqa::constants::CRZ, OpType::RZ}
+    {cunqa::constants::CRZ, OpType::RZ},
+    {cunqa::constants::RXX, OpType::RXX},
+    {cunqa::constants::RYY, OpType::RYY},
+    {cunqa::constants::RZZ, OpType::RZZ},
+    {cunqa::constants::RZX, OpType::RZX},
+    {cunqa::constants::XXMYY, OpType::XXminusYY},
+    {cunqa::constants::XXPYY, OpType::XXplusYY},
+
+    // TWO QUBITS TWO PARAMS
+    {cunqa::constants::CU2, OpType::U2},
+
+    // TWO QUBITS THREE PARAMS
+    {cunqa::constants::CU3, OpType::U},
+
+    // THREE QUBITS NO PARAMS
+    {cunqa::constants::CSWAP, OpType::SWAP},
+    
+    // MULTICONTROLED NO PARAM
+    {cunqa::constants::MCX, OpType::X},
+
+    // MULTICONTROLED PARAM
+    {cunqa::constants::MCP, OpType::P},
+
+    // SPECIAL
+    {cunqa::constants::RESET, OpType::Reset},
+    {cunqa::constants::BARRIER, OpType::Barrier},
+
+
 };
 
 struct TaskState {
@@ -120,6 +171,7 @@ std::string MunichSimulatorAdapter::execute_shot_(
         [&](TaskState& T, const JSON& instruction = {}) 
     {
         const JSON& inst = instruction.empty() ? *T.it : instruction;
+        std::string inst_name = inst.at("name").get<std::string>();
 
         std::vector<int> qubits;
         if (inst.contains("qubits"))
@@ -148,31 +200,45 @@ std::string MunichSimulatorAdapter::execute_shot_(
                 
             break;
         }
+        case constants::ID:
         case constants::X:
         case constants::Y:
         case constants::Z:
         case constants::H:
+        case constants::S:
+        case constants::SDG:
         case constants::SX:
+        case constants::SXDG:
+        case constants::T:
+        case constants::TDG:
+        case constants::V:
+        case constants::VDG:
         {
-            std::unique_ptr<StandardOperation> simple_gate;
-            simple_gate = std::make_unique<StandardOperation>(qubits[0] + T.zero_qubit, MUNICH_INSTRUCTIONS_MAP.at(inst_type));
+            auto simple_gate = std::make_unique<StandardOperation>(qubits[0] + T.zero_qubit, MUNICH_INSTRUCTIONS_MAP.at(inst_type));
             applyOperationToStateAdapter(std::move(simple_gate));
             break;
         }
         case constants::RX:
         case constants::RY:
         case constants::RZ:
+        case constants::GLOBALP:
+        case constants::P:
+        case constants::U1:
+        case constants::U2:
+        case constants::U3:
+        case constants::U:
         {
-            std::unique_ptr<StandardOperation> simple_gate;
             auto params = inst.at("params").get<std::vector<double>>();
-            simple_gate = std::make_unique<StandardOperation>(qubits[0] + T.zero_qubit, MUNICH_INSTRUCTIONS_MAP.at(inst_type), params);
+            auto simple_gate = std::make_unique<StandardOperation>(qubits[0] + T.zero_qubit, MUNICH_INSTRUCTIONS_MAP.at(inst_type), params);
             applyOperationToStateAdapter(std::move(simple_gate));
             break;
         }
         case constants::ECR:
         case constants::SWAP:
+        case constants::ISWAP:
+        case constants::DCX:
         {
-            qc::Targets targets = {static_cast<unsigned int>(G.n_qubits - 1), static_cast<unsigned int>(qubits[0] + T.zero_qubit)};
+            qc::Targets targets = {static_cast<unsigned int>(qubits[0] + T.zero_qubit), static_cast<unsigned int>(qubits[1] + T.zero_qubit)};
             auto two_gate = std::make_unique<qc::StandardOperation>(targets, MUNICH_INSTRUCTIONS_MAP.at(inst_type));
             applyOperationToStateAdapter(std::move(two_gate));
             break;
@@ -180,6 +246,11 @@ std::string MunichSimulatorAdapter::execute_shot_(
         case constants::CX:
         case constants::CY:
         case constants::CZ:
+        case constants::CH:
+        case constants::CSX:
+        case constants::CS:
+        case constants::CSDG:
+        case constants::CSWAP:
         {
             int ctrl = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
             Control control(ctrl);
@@ -187,15 +258,78 @@ std::string MunichSimulatorAdapter::execute_shot_(
             applyOperationToStateAdapter(std::move(two_gate));
             break;
         }
+        case constants::RXX:
+        case constants::RYY:
+        case constants::RZZ:
+        case constants::RZX:
+        case constants::XXMYY:
+        case constants::XXPYY:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            qc::Targets targets = {static_cast<unsigned int>(qubits[0] + T.zero_qubit), static_cast<unsigned int>(qubits[1] + T.zero_qubit)};
+            auto two_gate = std::make_unique<qc::StandardOperation>(targets, MUNICH_INSTRUCTIONS_MAP.at(inst_type), params);
+            applyOperationToStateAdapter(std::move(two_gate));
+            break;
+        }
+        case constants::CP:
         case constants::CRX:
         case constants::CRY:
         case constants::CRZ:
+        case constants::CU1:
+        case constants::CU2:
+        case constants::CU3:
+        case constants::CU:
         {
             auto params = inst.at("params").get<std::vector<double>>();
             int ctrl = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
             Control control(ctrl);
             auto two_gate = std::make_unique<StandardOperation>(control, qubits[1] + T.zero_qubit, MUNICH_INSTRUCTIONS_MAP.at(inst_type), params);
             applyOperationToStateAdapter(std::move(two_gate));
+            break;
+        }
+        case constants::MCX:
+        {
+            std::vector<int> ctrls;
+            for (int i = 0; i < qubits.size() - 1; i++) {
+                if (qubits[i] == -1) {
+                    ctrls.push_back(G.n_qubits - 1);
+                } else {
+                    ctrls.push_back(qubits[i] + T.zero_qubit); 
+                }
+            }
+            Controls controls(ctrls.begin(), ctrls.end());
+            int target_indx = qubits.size() - 1;
+            auto mc_gate = std::make_unique<StandardOperation>(controls, qubits[target_indx] + T.zero_qubit, MUNICH_INSTRUCTIONS_MAP.at(inst_type));
+            applyOperationToStateAdapter(std::move(mc_gate));
+            break;
+        }
+        case constants::MCP:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            std::vector<int> ctrls;
+            for (int i = 0; i < qubits.size() - 1; i++) {
+                if (qubits[i] == -1) {
+                    ctrls.push_back(G.n_qubits - 1);
+                } else {
+                    ctrls.push_back(qubits[i] + T.zero_qubit); 
+                }
+            }
+            Controls controls(ctrls.begin(), ctrls.end());
+            int target_indx = qubits.size() - 1;
+            auto mc_gate = std::make_unique<StandardOperation>(controls, qubits[target_indx] + T.zero_qubit, MUNICH_INSTRUCTIONS_MAP.at(inst_type), params);
+            applyOperationToStateAdapter(std::move(mc_gate));
+            break;
+        }
+        case constants::RESET:
+        {
+            auto reset = std::make_unique<StandardOperation>(qubits[0] + T.zero_qubit, MUNICH_INSTRUCTIONS_MAP.at(inst_type));
+            applyOperationToStateAdapter(std::move(reset));
+            break;
+        }
+        case constants::BARRIER:
+        {
+            auto barrier = std::make_unique<StandardOperation>(qubits[0] + T.zero_qubit, MUNICH_INSTRUCTIONS_MAP.at(inst_type));
+            applyOperationToStateAdapter(std::move(barrier));
             break;
         }
         case constants::SEND:
@@ -326,14 +460,14 @@ std::string MunichSimulatorAdapter::execute_shot_(
         }
         case constants::RCONTROL:
         {
-            if (!G.qc_meas.contains(inst.at("qpus")[0])) {
+            if (!G.qc_meas.contains(inst.at("qpus")[0]) || G.qc_meas[inst.at("qpus")[0]].empty()) {
                 T.blocked = true;
                 return;
             }
 
             int meas2 = G.qc_meas[inst.at("qpus")[0]].top();
             G.qc_meas[inst.at("qpus")[0]].pop();
-
+            
             if (meas2) {
                 auto x = std::make_unique<StandardOperation>(G.n_qubits - 1, OpType::X);
                 applyOperationToStateAdapter(std::move(x));
@@ -349,7 +483,9 @@ std::string MunichSimulatorAdapter::execute_shot_(
             int result = measureAdapter(G.n_qubits - 1) - '0';
             G.qc_meas[T.id].push(result);
 
+
             Ts[inst.at("qpus")[0]].blocked = false;
+            T.blocked = false;
             break;
         }
         default:
@@ -362,8 +498,12 @@ std::string MunichSimulatorAdapter::execute_shot_(
         G.ended = true;
         for (auto& [id, T]: Ts)
         {
-            if (T.finished || T.blocked)
+            if (T.finished)
                 continue;
+            else if(T.blocked) {
+                G.ended = false;
+                continue;
+            }
 
             apply_next_instr(T, {});
 
@@ -465,11 +605,10 @@ JSON MunichSimulatorAdapter::simulate(comm::ClassicalChannel *classical_channel)
         n_qubits += 2;
 
     auto start = std::chrono::high_resolution_clock::now();
-    initializeSimulationAdapter(n_qubits);
     for (std::size_t i = 0; i < shots; i++)
     {   
+        initializeSimulationAdapter(n_qubits);
         meas_counter[execute_shot_(p_qca->quantum_tasks, classical_channel)]++;
-        resetStateAdapter(n_qubits);
     } // End all shots
 
     auto end = std::chrono::high_resolution_clock::now();

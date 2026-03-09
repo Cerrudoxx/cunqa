@@ -83,7 +83,7 @@ std::string execute_shot_(
         if (inst.contains("qubits"))
             qubits = inst.at("qubits").get<std::vector<int>>();
         auto inst_type = cunqa::constants::INSTRUCTIONS_MAP.at(inst.at("name").get<std::string>());
-        auto inst_name = inst.at("name").get<std::string>();
+        std::string inst_name = inst.at("name").get<std::string>();
 
         switch (inst_type)
         {
@@ -267,7 +267,7 @@ std::string execute_shot_(
         }
         case cunqa::constants::RCONTROL:
         {
-            if (!G.qc_meas.contains(inst.at("qpus")[0])) {
+            if (!G.qc_meas.contains(inst.at("qpus")[0]) || G.qc_meas[inst.at("qpus")[0]].empty()) {
                 T.blocked = true;
                 return;
             }
@@ -289,6 +289,7 @@ std::string execute_shot_(
             G.qc_meas[T.id].push(result);
 
             Ts[inst.at("qpus")[0]].blocked = false;
+            T.blocked = false;
             break;
         }
         default:
@@ -301,8 +302,12 @@ std::string execute_shot_(
         G.ended = true;
         for (auto& [id, T]: Ts)
         {
-            if (T.finished || T.blocked)
+            if (T.finished)
                 continue;
+            else if(T.blocked) {
+                G.ended = false;
+                continue;
+            }
 
             apply_next_instr(T, {});
 
@@ -333,6 +338,7 @@ namespace sim {
 
 JSON CunqaSimulatorAdapter::simulate([[maybe_unused]] const Backend* backend)
 {
+    LOGGER_DEBUG("Cunqa usual simulation");
     try
     { 
         auto n_qubits = qc.quantum_tasks[0].config.at("num_qubits").get<int>();
@@ -355,6 +361,7 @@ JSON CunqaSimulatorAdapter::simulate([[maybe_unused]] const Backend* backend)
 
 JSON CunqaSimulatorAdapter::simulate(comm::ClassicalChannel* classical_channel)
 {
+    LOGGER_DEBUG("Cunqa dynamic simulation");
     std::map<std::string, std::size_t> meas_counter;
 
     auto shots = qc.quantum_tasks[0].config.at("shots").get<int>();

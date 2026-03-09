@@ -16,13 +16,8 @@ __attribute__((constructor)) void initializeLogger() {
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console_sink->set_level(spdlog::level::warn);
 
-    // =========================================================================
-    //  USAMOS LA FUNCIÓN DINÁMICA (HPC-READY)
-    //  Esto garantiza que el log se guarda en $STORE/.cunqa o $HOME/.cunqa
-    // =========================================================================
     const std::string log_path = cunqa::constants::get_user_cunqa_dir() + "/client_debug.log";
-    
-    auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(log_path, 1024*1024, 5, false);
+    auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(log_path, 10*1024*1024, 10, false); // 10 files of 10 MB each
     file_sink->set_level(spdlog::level::debug);
 
     spdlog::sinks_init_list sinks = { file_sink, console_sink };

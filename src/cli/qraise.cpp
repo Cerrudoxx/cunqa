@@ -28,6 +28,11 @@ namespace fs = std::filesystem;
 
 int main(int argc, char* argv[]) 
 {
+    std::vector<std::string> supported_simple_simulators = {"Aer", "Munich", "Maestro", "Qulacs", "Cunqa"};
+    std::vector<std::string> supported_cc_simulators = {"Aer", "Munich", "Maestro", "Qulacs", "Cunqa"};
+    std::vector<std::string> supported_qc_simulators = {"Aer", "Munich", "Maestro", "Qulacs", "Cunqa"};
+    std::vector<std::string> supported_noisy_simulators = {"Aer", "Munich"};
+
     auto args = argparse::parse<CunqaArgs>(argc, argv, true); //true ensures an error is raised if we feed qraise an unrecognized flag
 
     std::ofstream sbatchFile("qraise_sbatch_tmp.sbatch");
@@ -37,26 +42,26 @@ int main(int argc, char* argv[])
         } else if (args.qmio) {
             write_qmio_sbatch(sbatchFile, args);
         } else if (args.noise_properties.has_value() || args.fakeqmio.has_value()) {
-            write_noise_model_sbatch(sbatchFile, args);
+            write_noise_model_sbatch(sbatchFile, args, supported_noisy_simulators);
         } else if (args.cc) {
-            write_cc_sbatch(sbatchFile, args);
+            write_cc_sbatch(sbatchFile, args, supported_cc_simulators);
         } else if (args.qc) {
-            write_qc_sbatch(sbatchFile, args);
+            write_qc_sbatch(sbatchFile, args, supported_qc_simulators);
         } else {
-            write_simple_sbatch(sbatchFile, args);
+            write_simple_sbatch(sbatchFile, args, supported_simple_simulators);
         }
     } catch (const std::exception& e) {
         sbatchFile.close();
         LOGGER_ERROR("Error writing the sbatch file. Aborting. {}", e.what());
-        std::system("rm qraise_sbatch_tmp.sbatch");
+        remove_tmp_files();
         return 1;
     }
     sbatchFile.close();
 
     // Executing and deleting the file
-    std::system("sbatch --parsable qraise_sbatch_tmp.sbatch");
+    auto sbatch_result = std::system("sbatch --parsable qraise_sbatch_tmp.sbatch");
     remove_tmp_files();
     
     
-    return EXIT_SUCCESS;
+    return sbatch_result;
 }

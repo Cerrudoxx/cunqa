@@ -82,6 +82,7 @@ std::string execute_shot_(
         [&](TaskState& T, const cunqa::JSON& instruction = {}) 
     {
         const cunqa::JSON& inst = instruction.empty() ? *T.it : instruction;
+        std::string inst_name = inst.at("name").get<std::string>();
 
         std::vector<int> qubits;
         if (inst.contains("qubits"))
@@ -112,13 +113,13 @@ std::string execute_shot_(
             break;
         }
         case cunqa::constants::X:
-            state->apply_mcx({qubits[0] + T.zero_qubit});
+            state->apply_x(qubits[0] + T.zero_qubit);
             break;
         case cunqa::constants::Y:
-            state->apply_mcy({qubits[0] + T.zero_qubit});
+            state->apply_y(qubits[0] + T.zero_qubit);
             break;
         case cunqa::constants::Z:
-            state->apply_mcz({qubits[0] + T.zero_qubit});
+            state->apply_z(qubits[0] + T.zero_qubit);
             break;
         case cunqa::constants::H:
             state->apply_h(qubits[0] + T.zero_qubit);
@@ -128,27 +129,6 @@ std::string execute_shot_(
             break;
         case cunqa::constants::RESET:
             state->apply_reset({qubits[0] + T.zero_qubit});
-            break;
-        case cunqa::constants::CX:
-        {
-            unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
-            state->apply_mcx({control, qubits[1] + T.zero_qubit});
-            break;
-        }
-        case cunqa::constants::CY:
-        {
-            unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
-            state->apply_mcy({control, qubits[1] + T.zero_qubit});
-            break;
-        }
-        case cunqa::constants::CZ:
-        {
-            unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
-            state->apply_mcz({control, qubits[1] + T.zero_qubit});
-            break;
-        }
-        case cunqa::constants::ECR:
-            // TODO
             break;
         case cunqa::constants::RX:
         {
@@ -166,6 +146,30 @@ std::string execute_shot_(
         {
             auto params = inst.at("params").get<std::vector<double>>();
             state->apply_mcrz({qubits[0] + T.zero_qubit}, params[0]);
+            break;
+        }
+        case cunqa::constants::U3:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            state->apply_u(qubits[0] + T.zero_qubit, params[0], params[1], params[2]);
+            break;
+        }
+        case cunqa::constants::CX:
+        {
+            unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
+            state->apply_mcx({control, qubits[1] + T.zero_qubit});
+            break;
+        }
+        case cunqa::constants::CY:
+        {
+            unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
+            state->apply_mcy({control, qubits[1] + T.zero_qubit});
+            break;
+        }
+        case cunqa::constants::CZ:
+        {
+            unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
+            state->apply_mcz({control, qubits[1] + T.zero_qubit});
             break;
         }
         case cunqa::constants::CRX:
@@ -189,9 +193,164 @@ std::string execute_shot_(
             state->apply_mcrz({control, qubits[1] + T.zero_qubit}, params[0]);
             break;
         }
+        case cunqa::constants::CU:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
+            state->apply_cu({control, qubits[1] + T.zero_qubit}, params[0], params[1], params[2], params[3]);
+            break;
+        }
         case cunqa::constants::SWAP:
         {
             state->apply_mcswap({qubits[0] + T.zero_qubit, qubits[1] + T.zero_qubit});
+            break;
+        }
+        case cunqa::constants::MCX:
+        {
+            std::vector<long unsigned int> qubits_list;
+            for (int i = 0; i < qubits.size(); i++) {
+                if (qubits[i] == -1) {
+                    qubits_list.push_back(G.n_qubits - 1);
+                } else {
+                    qubits_list.push_back(qubits[i] + T.zero_qubit); 
+                }
+            }
+            state->apply_mcx(qubits_list);
+            break;
+        }
+        case cunqa::constants::MCY:
+        {
+            std::vector<long unsigned int> qubits_list;
+            for (int i = 0; i < qubits.size(); i++) {
+                if (qubits[i] == -1) {
+                    qubits_list.push_back(G.n_qubits - 1);
+                } else {
+                    qubits_list.push_back(qubits[i] + T.zero_qubit); 
+                }
+            }
+            state->apply_mcy(qubits_list);
+            break;
+        }
+        case cunqa::constants::MCZ:
+        {
+            std::vector<long unsigned int> qubits_list;
+            for (int i = 0; i < qubits.size(); i++) {
+                if (qubits[i] == -1) {
+                    qubits_list.push_back(G.n_qubits - 1);
+                } else {
+                    qubits_list.push_back(qubits[i] + T.zero_qubit); 
+                }
+            }
+            state->apply_mcz(qubits_list);
+            break;
+        }
+        case cunqa::constants::MCSX:
+        {
+            std::vector<long unsigned int> qubits_list;
+            for (int i = 0; i < qubits.size(); i++) {
+                if (qubits[i] == -1) {
+                    qubits_list.push_back(G.n_qubits - 1);
+                } else {
+                    qubits_list.push_back(qubits[i] + T.zero_qubit); 
+                }
+            }
+            state->apply_mcsx(qubits_list);
+            break;
+        }
+        case cunqa::constants::MCP:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            std::vector<long unsigned int> qubits_list;
+            for (int i = 0; i < qubits.size(); i++) {
+                if (qubits[i] == -1) {
+                    qubits_list.push_back(G.n_qubits - 1);
+                } else {
+                    qubits_list.push_back(qubits[i] + T.zero_qubit); 
+                }
+            }
+            state->apply_mcphase(qubits_list, params[0]);
+            break;
+        }
+        case cunqa::constants::MCRX:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            std::vector<long unsigned int> qubits_list;
+            for (int i = 0; i < qubits.size(); i++) {
+                if (qubits[i] == -1) {
+                    qubits_list.push_back(G.n_qubits - 1);
+                } else {
+                    qubits_list.push_back(qubits[i] + T.zero_qubit); 
+                }
+            }
+            state->apply_mcrx(qubits_list, params[0]);
+            break;
+        }
+        case cunqa::constants::MCRY:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            std::vector<long unsigned int> qubits_list;
+            for (int i = 0; i < qubits.size(); i++) {
+                if (qubits[i] == -1) {
+                    qubits_list.push_back(G.n_qubits - 1);
+                } else {
+                    qubits_list.push_back(qubits[i] + T.zero_qubit); 
+                }
+            }
+            state->apply_mcry(qubits_list, params[0]);
+            break;
+        }
+        case cunqa::constants::MCRZ:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            std::vector<long unsigned int> qubits_list;
+            for (int i = 0; i < qubits.size(); i++) {
+                if (qubits[i] == -1) {
+                    qubits_list.push_back(G.n_qubits - 1);
+                } else {
+                    qubits_list.push_back(qubits[i] + T.zero_qubit); 
+                }
+            }
+            state->apply_mcrz(qubits_list, params[0]);
+            break;
+        }
+        case cunqa::constants::MCU:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            std::vector<long unsigned int> qubits_list;
+            for (int i = 0; i < qubits.size(); i++) {
+                if (qubits[i] == -1) {
+                    qubits_list.push_back(G.n_qubits - 1);
+                } else {
+                    qubits_list.push_back(qubits[i] + T.zero_qubit); 
+                }
+            }
+            state->apply_mcu(qubits_list, params[0], params[1], params[2], params[3]);
+            break;
+        }
+        case cunqa::constants::MCSWAP:
+        {
+            std::vector<long unsigned int> qubits_list;
+            for (int i = 0; i < qubits.size(); i++) {
+                if (qubits[i] == -1) {
+                    qubits_list.push_back(G.n_qubits - 1);
+                } else {
+                    qubits_list.push_back(qubits[i] + T.zero_qubit); 
+                }
+            }
+            state->apply_mcswap(qubits_list);
+            break;
+        }
+        case cunqa::constants::GLOBALP:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            state->apply_global_phase(params[0]);
+            break;
+        }
+        case cunqa::constants::UNITARY:
+        case cunqa::constants::DIAGONAL:
+        case cunqa::constants::MULTIPLEXER:
+        {
+            LOGGER_ERROR("DenseMatrix, SparseMatrix and DiagonalMatrix not supported yet.");
             break;
         }
         case cunqa::constants::SEND:
@@ -229,6 +388,8 @@ std::string execute_shot_(
         {
             // state->flush_ops();
             //------------- Generate Entanglement ---------------
+            //state->apply_h(G.n_qubits - 2);
+            //state->apply_mcx({G.n_qubits - 2, G.n_qubits - 1});
             generate_entanglement_();
             //----------------------------------------------------
 
@@ -306,7 +467,7 @@ std::string execute_shot_(
         case cunqa::constants::RCONTROL:
         {
             // state->flush_ops();
-            if (!G.qc_meas.contains(inst.at("qpus")[0])) {
+            if (!G.qc_meas.contains(inst.at("qpus")[0]) || G.qc_meas[inst.at("qpus")[0]].empty()) {
                 T.blocked = true;
                 return;
             }
@@ -328,6 +489,7 @@ std::string execute_shot_(
             G.qc_meas[T.id].push(result);
 
             Ts[inst.at("qpus")[0]].blocked = false;
+            T.blocked = false;
             break;
         }
         default:
@@ -340,8 +502,12 @@ std::string execute_shot_(
         G.ended = true;
         for (auto& [id, T]: Ts)
         {
-            if (T.finished || T.blocked)
+            if (T.finished)
                 continue;
+            else if(T.blocked) {
+                G.ended = false;
+                continue;
+            }
 
             apply_next_instr(T, {});
 
@@ -429,7 +595,7 @@ JSON AerSimulatorAdapter::simulate(comm::ClassicalChannel* classical_channel)
     }
     if (size(qc.quantum_tasks) > 1)
         n_qubits += 2;
-
+    
     reg_t qubit_ids;
     auto start = std::chrono::high_resolution_clock::now();
     for (std::size_t i = 0; i < shots; i++)

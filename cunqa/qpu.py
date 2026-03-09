@@ -235,7 +235,7 @@ def run(
                 instr.pop("circuits")
         circuit["sending_to"] = [correspondence[target_circuit] 
                                     for target_circuit in circuit["sending_to"]]
-        circuit["id"] = correspondence[circuit["id"]]
+        circuit["id"] = (circuit["id"], correspondence[circuit["id"]])
 
     run_parameters = {k: v for k, v in run_args.items()}
     qjobs = [qpu.execute(circuit, param_values, **run_parameters) for circuit, qpu in zip(circuits_ir, qpus)]
@@ -306,6 +306,9 @@ def qraise(n, t, *,
            simulator = None, 
            backend = None, 
            noise_properties_path = None, 
+           no_thermal_relaxation = False,
+           no_readout_error = False,
+           no_gate_error = False,
            fakeqmio = False, 
            family = None, 
            co_located = True, 
@@ -333,6 +336,9 @@ def qraise(n, t, *,
         backend (str): path to a file containing the backend information.
         noise_properties_path (str): Path to the noise properties json file, only supported for 
                                 simulator Aer. Default: None
+        no_thermal_relaxation (bool): if ``True``, deactivate thermal relaxation in a noisy backend. Default: ``false``
+        no_readout_error (bool): if ``True``, deactivate readout error in a noisy backend. Default: ``false``
+        no_gate_error (bool): if ``True``, deactivate gate error in a noisy backend. Default: ``false``
         fakeqmio (bool): ``True`` for raising `n` vQPUs with FakeQmio backend. Only available 
                          at CESGA.
         family (str): name to identify the group of vQPUs raised.
@@ -351,84 +357,103 @@ def qraise(n, t, *,
     logger.debug("Setting up the requested QPUs...")
     command = f"qraise -n {n} -t {t}"
 
-    try:
-        if noise_properties_path is not None:
-            command = command + f" --noise-properties={str(noise_properties_path)}"
-        if fakeqmio:
-            command = command + " --fakeqmio"
-        if classical_comm:
-            command = command + " --classical_comm"
-        if quantum_comm:
-            command = command + " --quantum_comm"
-        if simulator is not None:
-            command = command + f" --simulator={str(simulator)}"
-        if family is not None:
-            command = command + f" --family_name={str(family)}"
-        if co_located:
-            command = command + " --co-located"
-        if cores is not None:
-            command = command + f" --cores={str(cores)}"
-        if mem_per_qpu is not None:
-            command = command + f" --mem-per-qpu={str(mem_per_qpu)}G"
-        if n_nodes is not None:
-            command = command + f" --n_nodes={str(n_nodes)}"
-        if node_list is not None:
-            command = command + f" --node_list={str(node_list)}"
-        if qpus_per_node is not None:
-            command = command + f" --qpus_per_node={str(qpus_per_node)}"
-        if backend is not None:
-            command = command + f" --backend={str(backend)}"
-        if partition is not None:
-            command = command + f" --partition={str(partition)}"
-        if gpu:
-            command = command + f" --gpu"
-        if qmio:
-            command = command + f" --qmio"
+    if noise_properties_path is not None:
+        command = command + f" --noise-properties={str(noise_properties_path)}"
+    if no_thermal_relaxation:
+        command = command + " --no-termal-relaxation"
+    if no_readout_error:
+        command = command + " --no-readout-error"
+    if no_gate_error:
+        command = command + " --no-gate-error"
+    if fakeqmio:
+        command = command + " --fakeqmio"
+    if classical_comm:
+        command = command + " --classical_comm"
+    if quantum_comm:
+        command = command + " --quantum_comm"
+    if simulator is not None:
+        command = command + f" --simulator={str(simulator)}"
+    if family is not None:
+        command = command + f" --family_name={str(family)}"
+    if co_located:
+        command = command + " --co-located"
+    if cores is not None:
+        command = command + f" --cores={str(cores)}"
+    if mem_per_qpu is not None:
+        command = command + f" --mem-per-qpu={str(mem_per_qpu)}G"
+    if n_nodes is not None:
+        command = command + f" --n_nodes={str(n_nodes)}"
+    if node_list is not None:
+        command = command + f" --node_list={str(node_list)}"
+    if qpus_per_node is not None:
+        command = command + f" --qpus_per_node={str(qpus_per_node)}"
+    if backend is not None:
+        command = command + f" --backend={str(backend)}"
+    if partition is not None:
+        command = command + f" --partition={str(partition)}"
+    if gpu:
+        command = command + " --gpu"
+    if qmio:
+        command = command + " --qmio"
 
-        if not os.path.exists(QPUS_FILEPATH):
-           with open(QPUS_FILEPATH, "w") as file:
-                file.write("{}")
+    if not os.path.exists(QPUS_FILEPATH):
+        with open(QPUS_FILEPATH, "w") as file:
+            file.write("{}")
 
-        print(f"Requested QPUs with command:\n\t{command}")
+    print(f"Requested QPUs with command:\n\t{command}")
 
         #run the command on terminal and capture its output on the variable 'output'
-        output = subprocess.run(command, capture_output=True, shell=True, text=True).stdout.rstrip("\n")
-
-        #sees the output on the console and selects the job_id
-        job_id = output.split(";", 1)[0]
-
-        cmd_getstate = ["squeue", "-h", "-j", job_id, "-o", "%T"]
-        
-        i = 0
-        while True:
-            state = subprocess.run(
-                cmd_getstate, 
-                capture_output = True, 
-                text = True, 
-                check = True
-            ).stdout.strip()
-            if state == "RUNNING":
-                try:     
-                    with open(QPUS_FILEPATH, "r") as file:
-                        data = json.load(file)
-                except json.JSONDecodeError:
-                    continue
-                count = sum(1 for key in data if key.startswith(job_id))
-                if count == n:
-                    break
-            # We do this to prevent an overload of the Slurm deamon 
-            if i == 500:
-                time.sleep(2)
-            else:
-                i += 1
-
-        # Wait for QPUs to be raised, so that get_QPUs can be executed inmediately
-        print("QPUs ready to work \U00002705")
-
-        return family if family is not None else str(job_id)
+    cmd_result = subprocess.run(command, 
+                            capture_output = True, 
+                            shell = True, 
+                            text = True)
     
-    except subprocess.CalledProcessError as error:
-        raise RuntimeError(f"An error was encoutered while qraising:\n {error.stderr}.")
+    stdout_text = (cmd_result.stdout or "").strip()
+    first_line = stdout_text.splitlines()[0].strip() if stdout_text else ""
+    stdout = first_line.split(";", 1)[0].strip() if first_line else ""
+    
+    stderr = cmd_result.stderr.strip()
+    if cmd_result.returncode != 0 or not stdout.isdigit():
+        raise RuntimeError(
+            f"sbatch submission failed\n"
+            f"stdout: {stdout}\n"
+            f"stderr: {stderr}"
+        )
+
+    #sees the output on the console and selects the job_id
+    output = cmd_result.stdout.rstrip("\n")
+    job_id = output.split(";", 1)[0]
+
+    cmd_getstate = ["squeue", "-h", "-j", job_id, "-o", "%T"]
+    
+    i = 0
+    while True:
+        state = subprocess.run(
+            cmd_getstate, 
+            capture_output = True, 
+            text = True, 
+            check = True
+        ).stdout.strip()
+        if state == "RUNNING":
+            try:     
+                with open(QPUS_FILEPATH, "r") as file:
+                    data = json.load(file)
+            except json.JSONDecodeError:
+                continue
+            count = sum(1 for key in data if key.startswith(job_id))
+            if count == n:
+                break
+        # We do this to prevent an overload of the Slurm deamon 
+        if i == 500:
+            time.sleep(2)
+        else:
+            i += 1
+
+    # Wait for QPUs to be raised, so that get_QPUs can be executed inmediately
+    print("QPUs ready to work \U00002705")
+
+    return family if family is not None else str(job_id)
+    
 
 def qdrop(*families: str):
     """

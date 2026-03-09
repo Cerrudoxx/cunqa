@@ -1,3 +1,4 @@
+
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
@@ -26,16 +27,16 @@
 #include "backends/simulators/Qulacs/qulacs_cc_simulator.hpp"
 #include "backends/simulators/Qulacs/qulacs_qc_simulator.hpp"
 
+#include "utils/constants.hpp"
 #include "utils/json.hpp"
 #include "utils/helpers/murmur_hash.hpp"
-#include "utils/constants.hpp" // Necesario para get_user_cunqa_dir()
+#include "utils/constants.hpp" //for get_user_cunqa_dir()
 #include "logger.hpp"
 
 using namespace std::string_literals;
 using namespace cunqa;
 using namespace cunqa::sim;
 
-// Modificado para aceptar el output_path e inyectarlo en el comando de python
 std::string generate_noise_instructions(const JSON& back_path_json, const std::string& family, const std::string& output_path)
 {
     std::string backend_path;
@@ -55,7 +56,7 @@ std::string generate_noise_instructions(const JSON& back_path_json, const std::s
                                    + back_path_json.at("gate_error").get<std::string>() + " "s
                                    + family + " "s
                                    + back_path_json.at("fakeqmio").get<std::string>() + " "s
-                                   + output_path); // ¡El output path que le pasamos al parser de Python!
+                                   + output_path);
                                    
     LOGGER_DEBUG("Command: {}", command);
     std::system(command.c_str());
@@ -70,6 +71,7 @@ void turn_ON_QPU(
 {
     std::unique_ptr<Simulator> simulator = std::make_unique<Simulator>();
     Config config;
+    config.set_basis_gates(get_basis_gates(simulator->get_name()));
     if (!backend_json.empty())
         config = backend_json;
     QPU qpu(std::make_unique<BackendType>(config, std::move(simulator)), mode, name, family);
@@ -83,7 +85,7 @@ int main(int argc, char *argv[])
     std::string family(argv[3]);
     std::string sim_arg(argv[4]);
 
-    // Variables seguras de Slurm (evitan segfault si se corre en local)
+    // Safe Slurm variables (prevent segfault if run locally)
     std::string slurm_job_id = std::getenv("SLURM_JOB_ID") ? std::getenv("SLURM_JOB_ID") : "local_job";
     std::string slurm_procid = std::getenv("SLURM_PROCID") ? std::getenv("SLURM_PROCID") : "0";
     std::string slurm_task_pid = std::getenv("SLURM_TASK_PID") ? std::getenv("SLURM_TASK_PID") : "0";
@@ -92,21 +94,17 @@ int main(int argc, char *argv[])
         family = slurm_job_id;
         
     std::string name = slurm_job_id + "_"s + slurm_task_pid;
-    
+
     auto back_path_json = (argc == 6 ? JSON::parse(std::string(argv[5])) : JSON());
     JSON backend_json;
 
     if (back_path_json.contains("noise_properties_path")) {
         if (sim_arg != "Aer")
             throw std::runtime_error("Noise is only available with AER at the moment.");
-            
-        // ==============================================================================
-        //  AQUÍ ESTÁ LA CLAVE: Usamos get_user_cunqa_dir() para asegurar permisos
-        // ==============================================================================
-        std::string fpath = cunqa::constants::get_user_cunqa_dir() + "/tmp_noisy_backend_" + slurm_job_id + ".json";
+        std::string fpath = std::string(constants::CUNQA_PATH) + "/tmp_noisy_backend_" + slurm_job_id + ".json";
 
         if (slurm_procid == "0") {
-            generate_noise_instructions(back_path_json, family, fpath); // Pasamos fpath a python
+            generate_noise_instructions(back_path_json, family, fpath); // fpath to python script
             LOGGER_DEBUG("Correctly created tmp noise intructions file.");
         } else {
             int fd = open(fpath.c_str(), O_RDONLY);

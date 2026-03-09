@@ -5,17 +5,17 @@
 #include <unordered_map>
 #include <string_view>
 #include <string>
-#include <cstdlib> // Necesario para std::getenv
+#include <cstdlib> 
 
 namespace cunqa {
 namespace constants{
 
-// 1. Definimos la función auxiliar para obtener el directorio dinámico.
-// Así puede ser usada tanto aquí como en setup_qpus.cpp
+// 1. Define the helper function to get the dynamic directory.
+// We use 'inline' to avoid multiple definition errors when including the header.
 inline std::string get_user_cunqa_dir() {
     // Prioridad 1: Clústeres (Lusitania, etc)
     if (const char* store_env = std::getenv("STORE")) {
-        return std::string(store_env) + "/.cunqa";
+        return std::string(store_env) + std::string("/.cunqa");
     }
     // Prioridad 2: Entorno local
     const char* home_env = std::getenv("HOME");
@@ -27,18 +27,50 @@ inline std::string get_user_cunqa_dir() {
 // of the logger_client, that is initialized before main (therefore before
 // const std::string parameters are initialized) 
 inline constexpr std::string_view CUNQA_PATH = "@CUNQA_PATH@";
-const std::string INSTALL_PATH = "@CMAKE_INSTALL_PREFIX@";
 
-// 2. Usamos la función para inicializar las variables
+// Helper for dynamic variables
 inline const std::string QPUS_FILEPATH = get_user_cunqa_dir() + "/qpus.json";
 inline const std::string COMM_FILEPATH = get_user_cunqa_dir() + "/communications.json";
+
+const std::string INSTALL_PATH = "@CMAKE_INSTALL_PREFIX@";
+
+
+enum SIMULATORS {
+  AER,
+  MUNICH,
+  MAESTRO,
+  QULACS,
+  CUNQASIM
+};
+
+const std::unordered_map<std::string, int> SIMULATORS_MAP {
+  {"Aer", AER},
+  {"Munich", MUNICH},
+  {"Maestro", MAESTRO},
+  {"Qulacs", QULACS},
+  {"Cunqa", CUNQASIM},
+};
 
 
 enum INSTRUCTIONS {
     UNITARY,
+    DIAGONAL,
+    MULTIPLEXER,
+    MULTIPAULI,
+    AMPLITUDEDAMPINGNOISE,
+    BITFLIPNOISE,
+    DENSEMATRIX,
+    DEPHASINGNOISE,
+    DEPOLARIZINGNOISE,
+    INDEPENDENTXZNOISE,
+    RANDOMUNITARY,
+    SPARSEMATRIX,
+    TWOQUBITDEPOLARIZINGNOISE,
+    COPY,
+    RESET,
+    BARRIER,
 
     MEASURE,
-    COPY,
 
     ID,
     X,
@@ -46,54 +78,78 @@ enum INSTRUCTIONS {
     Z,
     H,
     S,
-    SDAG,
+    SDG,
     T,
-    TDAG,
+    TDG,
     SX,
     SY, 
     SZ,
-    SXDAG,
-    SYDAG,
-    SZDAG,
+    SXDG,
+    SYDG,
+    SZDG,
     P0,
     P1,
-    RESET,
+    V,
+    VDG,
+    K,
 
     RX,
     RY,
     RZ,
+    GLOBALP,
     P,
+    U1,
     ROTINVX,
     ROTINVY,
     ROTINVZ,
-    U1,
+    ROTX,
+    ROTY,
+    ROTZ,
+    MULTIPAULIROTATION,
 
     U2,
     R,
 
     U3,
+
     U,
 
     ECR,
-    CU1,
-    CU3,
     SWAP,
+    ISWAP,
+    FUSEDSWAP,
     CX,
     CY,
     CZ,
+    CH,
     CSX,
+    CSXDG,
     CSY, 
     CSZ,
+    CS,
+    CSDG,
     CT,
-
-    CP,
+    DCX,
+    
     CRX,
     CRY,
     CRZ,
+    CP,
+    CPTP,
+    CU1,
     RXX,
     RYY,
     RZZ,
     RZX,
+    XXMYY,
+    XXPYY,
+
+    CU2,
+    CR,
+
+    CU3,
+
+    CU,
 
     CECR,
     CSWAP,
@@ -101,10 +157,27 @@ enum INSTRUCTIONS {
     CCY,
     CCZ,
 
-    CU2,
-    CR,
+    MCX,
+    MCY,
+    MCZ,
+    MCSX,
 
-    CU,
+    MCPHASE,
+    MCRX,
+    MCRY,
+    MCRZ,
+    MCP,
+    MCU1,
+
+    MCU2,
+    MCR,
+
+    MCU3,
+
+    MCU,
+
+    MCSWAP,
+
 
     CIF,
     SEND,
@@ -118,12 +191,27 @@ enum INSTRUCTIONS {
 };
 
 const std::unordered_map<std::string, int> INSTRUCTIONS_MAP = {
-    // UNITARY
+    // SPECIAL
     {"unitary", UNITARY},
+    {"diagonal", DIAGONAL},
+    {"multiplexer", MULTIPLEXER},
+    {"multipauli", MULTIPAULI},
+    {"amplitudedampingnoise", AMPLITUDEDAMPINGNOISE},
+    {"bitflipnoise", BITFLIPNOISE},
+    {"densematrix", DENSEMATRIX},
+    {"dephasingnoise", DEPHASINGNOISE},
+    {"depolarizingnoise", DEPOLARIZINGNOISE},
+    {"independentxznoise", INDEPENDENTXZNOISE},
+    {"randomunitary", RANDOMUNITARY},
+    {"sparsematrix", SPARSEMATRIX},
+    {"twoqubitdepolarizingnoise", TWOQUBITDEPOLARIZINGNOISE},
+    {"copy", COPY},
+    {"reset", RESET},
+    {"barrier", BARRIER},
+
 
     // MEASURE
     {"measure", MEASURE},
-    {"copy", COPY},
 
     // ONE QUBIT NO PARAM
     {"id", ID},
@@ -135,26 +223,32 @@ const std::unordered_map<std::string, int> INSTRUCTIONS_MAP = {
     {"sx", SX},
     {"sy", SY},
     {"sz", SZ},
-    {"sdag", SDAG},
-    {"sxdag", SXDAG},
-    {"sydag", SYDAG},
-    {"szdag", SZDAG},
+    {"sdg", SDG},
+    {"sxdg", SXDG},
+    {"sydg", SYDG},
+    {"szdg", SZDG},
     {"t", T},
-    {"tdag", TDAG},
+    {"tdg", TDG},
     {"p0", P0},
     {"p1", P1},
-    {"reset", RESET},
+    {"v", V},
+    {"vdg", VDG},
+    {"k", K},
 
     // ONE QUBIT ONE PARAM
-    {"u1", U1},
-    {"p", P},
     {"rx", RX},
     {"ry", RY},
     {"rz", RZ},
+    {"gp", GLOBALP},
+    {"p", P},
     {"u1", U1},
     {"rotinvx", ROTINVX},
     {"rotinvy", ROTINVY},
     {"rotinvz", ROTINVZ},
+    {"rotx", ROTX},
+    {"roty", ROTY},
+    {"rotz", ROTZ},
+    {"multipaulirotation", MULTIPAULIROTATION},
 
     // ONE QUBIT TWO PARAM
     {"u2", U2},
@@ -162,42 +256,86 @@ const std::unordered_map<std::string, int> INSTRUCTIONS_MAP = {
 
     // ONE QUBIT THREE PARAM
     {"u3", U3},
+
+    // ONE QUBIT FOUR PARAM
     {"u", U},
 
     // TWO QUBIT NO PARAM
+    {"ecr", ECR},
     {"swap", SWAP},
+    {"iswap", ISWAP},
+    {"fusedswap", FUSEDSWAP},
     {"cx", CX},
     {"cy", CY},
     {"cz", CZ},
+    {"ch", CH},
     {"csx", CSX},
+    {"csxdg", CSXDG},
     {"csy", CSY},
     {"csz", CSZ},
+    {"cs", CS},
+    {"csdg", CSDG},
     {"ct", CT}, 
-    {"ecr", ECR},
+    {"dcx", DCX},
 
     // TWO QUBIT ONE PARAM
-    {"cu1", CU1},
-    {"cp", CP},
     {"crx", CRX},
     {"cry", CRY},
     {"crz", CRZ},
+    {"cp", CP},
+    {"cptp", CPTP},
+    {"cu1", CU1},
     {"rxx", RXX},
     {"ryy", RYY},
     {"rzz", RZZ},
     {"rzx", RZX},
+    {"xxmyy", XXMYY},
+    {"xxpyy", XXPYY},
 
-    // TWO QUBIT THREE PARAM
+    // TWO QUBIT TWO PARAM
     {"cu2", CU2},
     {"cr", CR},
-    {"cu", CU},
+
+    // TWO QUBIT THREE PARAM
     {"cu3", CU3},
+    
+    //TWO QUBIT FOUR PARAM
+    {"cu", CU},
+
 
     // THREE QUBIT NO PARAM
+    {"cecr", CECR},
+    {"cswap", CSWAP},
     {"ccx", CCX},
     {"ccy", CCY},
     {"ccz", CCZ},
-    {"cecr", CECR},
-    {"cswap", CSWAP},
+
+    // MULTICONTROLED ONE QUBIT NO PARAM
+    {"mcx", MCX},
+    {"mcy", MCY},
+    {"mcz", MCZ},
+    {"mcsx", MCSX},
+
+    // MULTICONTROLED ONE QUBIT ONE PARAM
+    {"mcphase", MCPHASE},
+    {"mcrx", MCRX},
+    {"mcry", MCRY},
+    {"mcrz", MCRZ},
+    {"mcp", MCP},
+    {"mcu1", MCU1},
+
+    // MULTICONTROLED ONE QUBIT TWO PARAM
+    {"mcu2", MCU2},
+    {"mcr", MCR},
+
+    // MULTICONTROLED ONE QUBIT THREE PARAM
+    {"mcu3", MCU3},
+
+    // MULTICONTROLED ONE QUBIT FOUR PARAM
+    {"mcu", MCU},
+
+    // MULTICONTROLED TWO QUBIT NO PARAM
+    {"mcswap", MCSWAP},
 
     // CLASSICAL IF
     {"cif", CIF},
@@ -216,16 +354,71 @@ const std::unordered_map<std::string, int> INSTRUCTIONS_MAP = {
     {"save_state", SAVE_STATE}
 };
 
-const std::vector<std::string> BASIS_GATES = {
-    "unitary",
+
+const std::vector<std::string> AER_BASIS_GATES = {
+    "measure", 
     "id", "x", "y", "z", "h", "s", "sdg", "sx", "sxdg", "t", "tdg",
-    "u1", "p", "rx", "ry", "rz",
-    "u2", "r",
-    "u3", "u",
-    "ecr", "swap", "cx", "cy", "cz", "csx",
-    "cp", "cu1", "crx", "cry", "crz", "rxx", "ryy", "rzz", "rzx", 
-    "cu", "cu3",
-    "cswap", "ccx", "ccz",
+    "u1", "gp", "rx", "ry", "rz",
+    "u2", "r", 
+    "u3",
+    "swap", "cx", "cy", "cz", "csx", "ecr",
+    "cp", "cu1", "crx", "cry", "crz", "rxx", "ryy", "rzz", "rzx",
+    "cu2", 
+    "cu3", "cu", 
+    "ccx", "ccz",  "cswap", 
+    "mcx", "mcy", "mcz", "mcsx",  
+    "mcp", "mcphase", "mcu1", "mcrx", "mcry", "mcrz", 
+    "mcu2", "mcr",
+    "mcu3",
+    "mcswap", 
+    "unitary", "diagonal", "multiplexer",
+};
+
+const std::vector<std::string> MUNICH_BASIS_GATES = {
+  "measure",
+  "id", "x", "y", "z", "h", "s", "sdg", "sx", "sxdg", "t", "tdg",
+  "u1", "gp", "p", "rx", "ry", "rz", 
+  "u2", 
+  "u3", 
+  "u",
+  "cx", "cy", "cz", "ch", "csx", "cs", "csdg", "swap", "iswap", "ecr", "dcx",  
+  "cu1", "cp", "crx", "cry", "crz", "rxx", "ryy", "rzz", "rzx", "xxmyy", "xxpyy", 
+  "cu3",
+  "cu",
+  "cswap", 
+  "mcx", "mcp",
+  "reset", "barrier",
+};
+
+const std::vector<std::string> MAESTRO_BASIS_GATES = {
+  "measure",
+  "x", "y", "z", "h", "s", "sdg", "t", "tdg", "sx", "sxdg", "k",
+  "p", "rx", "ry", "rz", 
+  "u", 
+  "cx", "cy", "cz", "ch", "csx", "csxdg", "swap", 
+  "cp", "crx", "cry", "crz",
+  "ccx", "cswap",
+  "cu",
+  "reset",
+};
+
+const std::vector<std::string> QULACS_BASIS_GATES = {
+  "measure",
+  "id", "x", "y", "z", "h", "s", "sdg", "t", "tdg", "p0", "p1", "sx", "sxdg", "sy", "sydg", "multipauli",
+  "u1", "rx", "ry", "rz", "rotinvx", "rotinvy", "rotinvz", "rotx", "roty", "rotz", "parametricrx", "parametricry", "parametricrz", "multipaulirotation",
+  "u2", 
+  "u3",
+  "cx", "cz", "swap", "fusedswap", "ecr",
+  "cp",
+  "amplitudedampingdoise", "bitflipnoise", "densematrix", "dephasingnoise", "depolarizingnoise", "diagonalmatrix", "independentxznoise", "randomunitary", "sparsematrix", "twoqubitdepolarizingnoise",
+};
+
+const std::vector<std::string> CUNQASIM_BASIS_GATES = {
+  "measure", 
+  "id", "x", "y", "z", "h", "sx",
+  "rx", "ry", "rz", 
+  "swap", "cx", "cy", "cz", "ecr", 
+  "crx", "cry", "crz",
 };
 
 
@@ -239,9 +432,10 @@ const std::vector<std::string> BASIS_GATES = {
 const std::string cafe = R"(                                                                                                
                                                             ##*%                                                                                                
                                                           ###%###                                                                                               
-                                                      * ###%%%%%                                                                                               
+                                                      *  ###%%%%%                                                                                               
                                                   #%  #%%#%%%%%%%                                                                                               
-                                                  *%%%######%%%##%%%%%%#**** *###############%%%%%%%%##%##                                                                                 
+                                                  *%%%######%%%##%%%%%%#****                                                                                    
+                                                  *###############%%%%%%%%##%##                                                                                 
                                                   %%%%##%**#*%######%%%#%%#####%%#                                                                             
                                                   *#%#%#%##%*%**%###%######%####%%%###                                #%%%%%%%%%                                
                                                    +#%##%%####*%%%%###%##*#####%%#%%#%###                          #%%%%%%%%%@%%###                             
@@ -250,7 +444,7 @@ const std::string cafe = R"(
                                                         %#*#@%#%%%%%#%%%##%####*####*#*#***#%#%##               #%%%*%%%%%%%%@@%%%%@%#                          
                                                         %##%%%%%@@%%@%%%%%%####%%#********####*##*%#         ##%%%%%%%%#%%%#%%%@%@@%%%                          
                                                          ##%%%%%%%@@%%%%%%%%%%%%####%#######%#####%#%#       %%%%%%%%%%%%%%%%#%@@%@%@%%                         
-                                                          #%%%%%#@%@%%%%%%%%%%%%@%%%###%%#%##%##%*#####* #%%%@%%%%%%%##%%@%@@@@%%@%%@                         
+                                                          #%%%%%#@%@%%%%%%%%%%%%@%%%###%%#%##%##%*#####*   #%%%@%%%%%%%##%%@%@@@@%%@%%@                         
                                                                  #%%@%%%%%%%%@%@%@@%%%%%%%@%#%%#%###*##%#%%%%%%%%%%###%%%%%@@@@@@@%@@@%                         
                                                                   %%%@@@@@%@@@@@@@@%%%%#%#%%%####%%####%%%@%%%%%##%%%#%%@@%@@%%%%%@@%@%                         
                                                                    %%%%@@%@@@%%@%%%#%%%%%#####%########%@%%@@%%%%%%%%%%@%%%%%%%%%*@@%@%                         
@@ -264,7 +458,9 @@ const std::string cafe = R"(
                                                    %%%+=+===--=+==*%##====+=*+**++***%####**####%%%%%%%%#%%@@@@@%%%%##                                          
                                                  ###+======-::..-==++%%*--=#%%#*#**+#+%%%*##%####%%%%%%%%%%%%%%%%%%%%%                                          
                                                 %%==-=-==-=------::--=+%%%%%%%   *#*+*+*####%%%%%%%%%%##%%%%%###%%%                                             
-                                              %%+=+**=+=-+++++=++=====+=*#%%#        #**+%%%%%%%%%%%%%#%%%%##*#* +*#*#%%*++++++++++++++*==#%%%%%* -#*#%%%%%%%%%%%%%%%%#* %* *#*-%#%%%%%@@@@@@@@@@@@@%%#@=#%%           #%#%%%@@@@%%%%%%%%#*+                                                     
+                                              %%+=+**=+=-+++++=++=====+=*#%%#        #**+%%%%%%%%%%%%%#%%%%##*#*                                                
+                                            +*#*#%%*++++++++++++++*==#%%%%%*         -#*#%%%%%%%%%%%%%%%%#* %*                                                  
+                                           *#*-%#%%%%%@@@@@@@@@@@@@%%#@=#%%           #%#%%%@@@@%%%%%%%%#*+                                                     
                                           +**=  #%%%@@@@@@@@@@@@@%@@%%*-#@            #%#%#%%%%%%##%%%%#%                                                       
                                           ++=   #*#%%%####@@@@@@@@@%##%@%%             %%%%@%%#%%%###%                                                          
                                          =++=    *##########%@%@@%%%#%#%#             %%%%%@%@%@%                                                               
@@ -274,7 +470,8 @@ const std::string cafe = R"(
                                        .--            ::+#*==%#*#                          +***.                                                                
                                                   @@     .+#*=                             +**#:                                                                
                                                  @@                                        +###.                                                              
-                                                                                           =###**** @@@@@@    @@   @@@@@@@ @@@@@@@  @@@@@@                              :=###=                                                              
+                                                                                           =###****                                                           
+                      @@@@@@    @@   @@@@@@@ @@@@@@@  @@@@@@                              :=###=                                                              
                       @@       @@@@  @@      @@           @@                         -+*+=*####-                                                               
                       @@      @@  @@ @@@@@@@ @@@@@@@    @@@                      =+#######%%##**#-                                                              
                       @@      @@  @@ @@@     @@         @@                               %+##  -##:                                                             

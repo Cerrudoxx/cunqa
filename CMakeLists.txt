@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(CUNQA VERSION 1.2.0 LANGUAGES CXX)
+file(READ "${CMAKE_SOURCE_DIR}/VERSION.txt" PROJECT_VERSION)
+string(STRIP "${PROJECT_VERSION}" PROJECT_VERSION)
+
+project(CUNQA VERSION ${PROJECT_VERSION} LANGUAGES CXX)
 
 # =====================================================================
-#  PARCHE DE ARQUITECTURA PARA LUSITANIA (Sandy Bridge / CPU Antiguas)
+# PARCHE DE ARQUITECTURA PARA LUSITANIA (Sandy Bridge)
 # =====================================================================
 set(NATIVE_ARCH OFF CACHE BOOL "Force disable MQT native" FORCE)
 set(DDSIM_NATIVE_ARCH OFF CACHE BOOL "Force disable DDSim native" FORCE)
@@ -27,6 +30,8 @@ set(FLAGS_BLACKLIST
 add_compile_options(${FLAGS_BLACKLIST})
 add_link_options(${FLAGS_BLACKLIST})
 # =====================================================================
+
+message(STATUS "Building CUNQA ${PROJECT_VERSION}")
 
 message(STATUS "CMAKE BUILD TYPE: ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE CONFIGURATION TYPE: ${CMAKE_CONFIGURATION_TYPES}")
@@ -53,7 +58,7 @@ set(GPU_ARCH "")
 set(MAX_GPUS_PER_NODE "")
 
 # =====================================================================
-#  RUTAS DE INSTALACIÓN GLOBALES
+# RUTAS DE INSTALACIÓN GLOBALES (No $STORE)
 # =====================================================================
 set(CUNQA_DATA_DIR "share/cunqa") 
 
@@ -76,7 +81,6 @@ set(CMAKE_INSTALL_LIBDIR "lib")
 set(CMAKE_INSTALL_BINDIR "bin")
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 # =====================================================================
-
 
 # Fine tuning for CESGA machines (pybind11 cannot be found by default)
 set(SYSTEM_NAME $ENV{LMOD_SYSTEM_NAME})
@@ -120,6 +124,9 @@ function(find_or_fetch_package PACKAGE_NAME GIT_REPOSITORY VERSION TAG)
         GIT_TAG        ${TAG}
     )
     FetchContent_MakeAvailable(${PACKAGE_NAME})
+    set(${PACKAGE_NAME}_POPULATED "${${PACKAGE_NAME}_POPULATED}" PARENT_SCOPE)
+    set(${PACKAGE_NAME}_SOURCE_DIR "${${PACKAGE_NAME}_SOURCE_DIR}" PARENT_SCOPE)
+    set(${PACKAGE_NAME}_BINARY_DIR "${${PACKAGE_NAME}_BINARY_DIR}" PARENT_SCOPE)
   else()
     message(STATUS "Found package ${PACKAGE_NAME}: ${PACKAGE_NAME}_DIR = ${${PACKAGE_NAME}_DIR}")
   endif()
@@ -152,21 +159,7 @@ find_or_fetch_package(
   "1.16.0"
   "v1.16.0"
 )
-install(TARGETS spdlog DESTINATION "${CMAKE_INSTALL_LIBDIR}") 
-
-
-# =====================================================================
-#  TASKFLOW (Evitar error 504 de red forzando Git Clone por HTTPS)
-# =====================================================================
-FetchContent_Declare(
-    taskflow
-    GIT_REPOSITORY "https://github.com/taskflow/taskflow.git"
-    GIT_TAG "v3.7.0"
-)
-set(TF_BUILD_EXAMPLES OFF CACHE BOOL "Build taskflow examples" FORCE)
-set(TF_BUILD_TESTS OFF CACHE BOOL "Build taskflow tests" FORCE)
-FetchContent_MakeAvailable(taskflow)
-
+install(TARGETS spdlog DESTINATION "${CMAKE_INSTALL_LIBDIR}") # does this fails with FindPackage??
 
 # =====================================================================
 #  MQT-DDSIM - quantum circuit simulator
@@ -209,17 +202,17 @@ find_or_fetch_package(
 )
 
 # -- pyzmq -----------------------------------------------------------
-set(ZMQ_PREFIX "${libzmq_BINARY_DIR}" CACHE PATH "ZMQ_PREFIX" FORCE)
-set(LDFLAGS "-Wl,-rpath,${ZMQ_PREFIX}/lib")
+set(ZeroMQ_DIR "${libzmq_BINARY_DIR}" CACHE PATH "Path to ZeroMQConfig.cmake" FORCE)
+set(LDFLAGS "-Wl,-rpath,${ZMQ_PREFIX}")
 
 FetchContent_Declare(
     pyzmq
     GIT_REPOSITORY "git@github.com:zeromq/pyzmq.git"
-    GIT_TAG        "main"
+    GIT_TAG        "v27.1.0"
 )
 FetchContent_MakeAvailable(pyzmq)
-install(DIRECTORY  "${pyzmq_SOURCE_DIR}/zmq/" DESTINATION "${CMAKE_INSTALL_LIBDIR}/zmq")
-install(TARGETS "_zmq" DESTINATION "${CMAKE_INSTALL_LIBDIR}/zmq/backend/cython")
+install(DIRECTORY "${pyzmq_SOURCE_DIR}/zmq/" DESTINATION "${CMAKE_INSTALL_PREFIX}/zmq")
+install(TARGETS "_zmq" DESTINATION "${CMAKE_INSTALL_PREFIX}/zmq/backend/cython")
 
 # =====================================================================
 #  CUNQA SIMULATOR - CESGA Quantum Spain
@@ -227,8 +220,8 @@ install(TARGETS "_zmq" DESTINATION "${CMAKE_INSTALL_LIBDIR}/zmq/backend/cython")
 find_or_fetch_package(
   cunqasimulator
   "git@github.com:CESGA-Quantum-Spain/cunqasimulator.git"
-  "0.1.1"
-  "v0.1.1"
+  "0.1.2"
+  "v0.1.2"
 )
 
 # =====================================================================
@@ -283,7 +276,6 @@ if (DEFINED AER_GPU)
   # Hopper                 H100                   90
   
   set(GPU_ARCH 80)
-  set(MAX_GPUS_PER_NODE 8) # Dependent on GPU_ARCH and CLUSTER
   set(CMAKE_CUDA_ARCHITECTURES ${GPU_ARCH})
   enable_language(CUDA)
   set(CMAKE_CUDA_STANDARD 20)
@@ -329,6 +321,7 @@ if(NOT Eigen3_FOUND)
   if(NOT maestroeigen_POPULATED)
       FetchContent_Populate(MaestroEigen)
   endif()
+  #FetchContent_MakeAvailable(MaestroEigen)
   set(EIGEN5_INCLUDE_DIR "${maestroeigen_SOURCE_DIR}") 
 else()
   message(STATUS "Eigen 5.0 found")
@@ -367,13 +360,23 @@ endif()
 set(AER_INCLUDE_DIR "${maestro-aer_SOURCE_DIR}/src")
 
 # -- Maestro ----------------------------------------------------------
+set(ENV{EIGEN5_INCLUDE_DIR} "${EIGEN5_INCLUDE_DIR}")
+set(ENV{JSON_INCLUDE_DIR}   "${JSON_INCLUDE_DIR}")
+set(ENV{QCSIM_INCLUDE_DIR}  "${QCSIM_INCLUDE_DIR}")
+set(ENV{AER_INCLUDE_DIR}    "${AER_INCLUDE_DIR}")
+set(ENV{BOOST_ROOT}         "${Boost_DIR}/../../../")
 
 FetchContent_Declare(
     maestro
     GIT_REPOSITORY "git@github.com:QoroQuantum/maestro.git"
     GIT_TAG "a4d54721a718189362a4a9c8329d7211b662a8f9"
 )
+set(BUILD_PYTHON_BINDINGS OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(maestro)
+
+if(UNIX AND NOT APPLE)
+    target_link_options(maestro PRIVATE -Wl,-Bsymbolic-functions)
+endif()
 
 target_include_directories(maestro PUBLIC "${maestro_SOURCE_DIR}")
 install(TARGETS maestro DESTINATION "${CMAKE_INSTALL_LIBDIR}")
@@ -384,7 +387,7 @@ install(TARGETS maestro DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 FetchContent_Declare(
     qulacs
     GIT_REPOSITORY "git@github.com:usendon/qulacs.git"
-    GIT_TAG "228f617b9e31007b54488f467c031ebbf07efcdb"
+    GIT_TAG "6065d9ac8d30bd8a16b41b1e93776968ecc5b6d4"
 )
 
 set(USE_PYTHON OFF CACHE BOOL "" FORCE)
@@ -400,6 +403,7 @@ FetchContent_MakeAvailable(qulacs)
 set(CMAKE_CXX_FLAGS "${_old_CXX_FLAGS}")
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/utils/logger" "${CMAKE_CURRENT_SOURCE_DIR}/src")
+#include_directories("${Python_INCLUDE_DIRS}" "${MPI_INCLUDE_PATH}")
 
 add_subdirectory(src)
 add_subdirectory(cunqa)

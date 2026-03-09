@@ -7,6 +7,7 @@
 
 #include "utils/constants.hpp"
 #include "utils/helpers/reverse_bitstring.hpp"
+#include "utils/helpers/json_to_qasm2.hpp"
 
 #include "maestro_simulator_adapter.hpp"
 #include "maestrolib/Interface.h"
@@ -122,9 +123,54 @@ std::string execute_shot_(
         case cunqa::constants::H:
             ApplyH(simulator, qubits[0] + T.zero_qubit);
             break;
+        case cunqa::constants::S:
+            ApplyS(simulator, qubits[0] + T.zero_qubit);
+            break;
+        case cunqa::constants::SDG:
+            ApplySDG(simulator, qubits[0] + T.zero_qubit);
+            break;
+        case cunqa::constants::T:
+            ApplyT(simulator, qubits[0] + T.zero_qubit);
+            break;
+        case cunqa::constants::TDG:
+            ApplyTDG(simulator, qubits[0] + T.zero_qubit);
+            break;
         case cunqa::constants::SX:
             ApplySX(simulator, qubits[0] + T.zero_qubit);
             break;
+        case cunqa::constants::K:
+            ApplyK(simulator, qubits[0] + T.zero_qubit);
+            break;
+        case cunqa::constants::P:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            ApplyP(simulator, qubits[0] + T.zero_qubit, params[0]);
+            break;
+        }
+        case cunqa::constants::RX:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            ApplyRx(simulator, qubits[0] + T.zero_qubit, params[0]);
+            break;
+        }
+        case cunqa::constants::RY:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            ApplyRy(simulator, qubits[0] + T.zero_qubit, params[0]);
+            break;
+        }
+        case cunqa::constants::RZ:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            ApplyRz(simulator, qubits[0] + T.zero_qubit, params[0]);
+            break;
+        }
+        case cunqa::constants::U:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            ApplyU(simulator, qubits[0] + T.zero_qubit, params[0], params[1], params[2], params[3]);
+            break;
+        }
         case cunqa::constants::CX:
         {
             unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
@@ -143,25 +189,37 @@ std::string execute_shot_(
             ApplyCZ(simulator, control, qubits[1] + T.zero_qubit);
             break;
         }
+        case cunqa::constants::CH:
+        {
+            unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
+            ApplyCH(simulator, control, qubits[1] + T.zero_qubit);
+            break;
+        }
+        case cunqa::constants::CSX:
+        {
+            unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
+            ApplyCSX(simulator, control, qubits[1] + T.zero_qubit);
+            break;
+        }
+        case cunqa::constants::CSXDG:
+        {
+            unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
+            ApplyCSXDG(simulator, control, qubits[1] + T.zero_qubit);
+            break;
+        }
+        case cunqa::constants::SWAP:
+        {
+            ApplySwap(simulator, qubits[0] + T.zero_qubit, qubits[1] + T.zero_qubit);
+            break;
+        }
         case cunqa::constants::ECR:
             // TODO
             break;
-        case cunqa::constants::RX:
+        case cunqa::constants::CP:
         {
             auto params = inst.at("params").get<std::vector<double>>();
-            ApplyRx(simulator, qubits[0] + T.zero_qubit, params[0]);
-            break;
-        }
-        case cunqa::constants::RY:
-        {
-            auto params = inst.at("params").get<std::vector<double>>();
-            ApplyRy(simulator, qubits[0] + T.zero_qubit, params[0]);
-            break;
-        }
-        case cunqa::constants::RZ:
-        {
-            auto params = inst.at("params").get<std::vector<double>>();
-            ApplyRz(simulator, qubits[0] + T.zero_qubit, params[0]);
+            unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
+            ApplyCP(simulator, control, qubits[1] + T.zero_qubit, params[0]);
             break;
         }
         case cunqa::constants::CRX:
@@ -185,9 +243,30 @@ std::string execute_shot_(
             ApplyCRz(simulator, control, qubits[1] + T.zero_qubit, params[0]);
             break;
         }
-        case cunqa::constants::SWAP:
+        case cunqa::constants::CCX:
         {
-            ApplySwap(simulator, qubits[0] + T.zero_qubit, qubits[1] + T.zero_qubit);
+            std::vector<unsigned long> ctrls;
+            for (int i = 0; i < qubits.size() - 1; i++) {
+                if (qubits[i] == -1) {
+                    ctrls[i] = G.n_qubits - 1;
+                } else {
+                    ctrls[i] = qubits[i];
+                }
+            }
+            ApplyCCX(simulator, ctrls[0], ctrls[1], qubits[1] + T.zero_qubit);
+            break;
+        }
+        case cunqa::constants::CSWAP:
+        {
+            unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
+            ApplyCSwap(simulator, control, qubits[1] + T.zero_qubit, qubits[2] + T.zero_qubit);
+            break;
+        }
+        case cunqa::constants::CU:
+        {
+            auto params = inst.at("params").get<std::vector<double>>();
+            unsigned long control = (qubits[0] == -1) ? G.n_qubits - 1 : qubits[0] + T.zero_qubit;
+            ApplyCU(simulator, control, qubits[0] + T.zero_qubit, params[0], params[1], params[2], params[3]);
             break;
         }
         case cunqa::constants::SEND:
@@ -305,7 +384,7 @@ std::string execute_shot_(
         }
         case cunqa::constants::RCONTROL:
         {
-            if (!G.qc_meas.contains(inst.at("qpus")[0])) {
+            if (!G.qc_meas.contains(inst.at("qpus")[0]) || G.qc_meas[inst.at("qpus")[0]].empty()) {
                 T.blocked = true;
                 return;
             }
@@ -328,6 +407,7 @@ std::string execute_shot_(
             G.qc_meas[T.id].push(measurement_as_int);
 
             Ts[inst.at("qpus")[0]].blocked = false;
+            T.blocked = false;
             break;
         }
         default:
@@ -340,8 +420,12 @@ std::string execute_shot_(
         G.ended = true;
         for (auto& [id, T]: Ts)
         {
-            if (T.finished || T.blocked)
+            if (T.finished)
                 continue;
+            else if(T.blocked) {
+                G.ended = false;
+                continue;
+            }
 
             apply_next_instr(T, {});
 
@@ -481,7 +565,7 @@ JSON MaestroSimulatorAdapter::simulate(const Backend* backend)
         }
 
         char* result = SimpleExecute(simulatorHandle, circuit_json.dump().c_str(), run_config_json.dump().c_str());
-
+        
         if (result)
         {
             JSON maestro_result = JSON::parse(result);

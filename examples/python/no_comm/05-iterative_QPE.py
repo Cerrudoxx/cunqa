@@ -17,13 +17,13 @@ parametric_circuit.crz("theta", 0, 1)
 parametric_circuit.crz("theta", 0, 2)
 parametric_circuit.p("phase", 0)
 parametric_circuit.h(0)
-parametric_circuit.measure(0, 0)
+parametric_circuit.measure(0,0)
 
 
-N_QPUS = 10                  # Determines the number of bits of the phase that will be computed
+N_QPUS = 8                  # Determines the number of bits of the phase that will be computed
 PHASE_TO_COMPUTE = 1/2**5 
 SHOTS = 1024
-BIT_PRECISION = 30
+BIT_PRECISION = N_QPUS
 SEED = 18                   # Set seed for reproducibility
 
 
@@ -34,7 +34,11 @@ x2 = np.pi
 
 try:
     # 1. Deploy vQPUs
-    family = qraise(10, "00:10:00", simulator = "Munich", co_located = True)
+    family = qraise(N_QPUS, "00:10:00", simulator = "Aer", co_located = True)
+except Exception as error:
+    raise error
+
+try:
     qpus  = get_QPUs(co_located = True, family = family)
 
     
@@ -61,8 +65,8 @@ try:
         result = run(parametric_circuit, qpus[k%10], params, shots = 2000, seed = SEED).result
         counts = result.counts
 
-        zeros = counts.get("0", 0)
-        ones = counts.get("1", 0)
+        zeros = sum([counts for result, counts in counts.items() if result.endswith('0')])
+        ones = sum([counts for result, counts in counts.items() if result.endswith('1')])
         measure.append(0 if zeros > ones else 1) 
                 
 
