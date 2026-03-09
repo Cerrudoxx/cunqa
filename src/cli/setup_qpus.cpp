@@ -28,7 +28,7 @@
 
 #include "utils/json.hpp"
 #include "utils/helpers/murmur_hash.hpp"
-#include "utils/constants.hpp.in" // Necesario para get_user_cunqa_dir()
+#include "utils/constants.hpp" // Necesario para get_user_cunqa_dir()
 #include "logger.hpp"
 
 using namespace std::string_literals;

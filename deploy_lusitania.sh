@@ -26,7 +26,7 @@ module load gcc/gcc-11.2.0 \
             openblas/openblas-0.3.24 \
             openmpi/openmpi-4.1.2-gcc11.2.0 \
             python/python-3.10 \
-            boost/boost-1.78.0 \
+            boost/boost-1.85.0 \
             ccache/ccache-4.8.3
 set -e
 
@@ -60,22 +60,24 @@ fi
 # ==============================================================================
 # 2. CONFIGURACIÓN DE COMPILADORES MPI Y BLAS
 # ==============================================================================
-export CC="mpicc"
-export CXX="mpicxx"
+export CC="ccache mpicc"
+export CXX="ccache mpicxx"
 export BLA_VENDOR=OpenBLAS
 
 # ==============================================================================
 # 3. LIMPIEZA PREVIA (CRUCIAL PARA EVITAR CHOQUES DE VERSIÓN DE BOOST)
 # ==============================================================================
-echo ">>> Limpiando directorio de construcción..."
-rm -rf build/
-mkdir -p build/
+# echo ">>> Limpiando directorio de construcción..."
+# rm -rf build/
+# mkdir -p build/
 
 # ==============================================================================
 # 4. LANZAMIENTO DE CMAKE (Fase de configuración y descargas)
 # ==============================================================================
 echo ">>> Configurando CMake..."
 cmake -S . -B build/ \
+    -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+    -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
     -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_RPATH="$INSTALL_PREFIX/lib" \
@@ -91,6 +93,9 @@ cmake --build build/ -j $(nproc)
 
 echo ">>> Instalando archivos en $INSTALL_PREFIX ..."
 cmake --install build/
+
+echo ">>> Estadísticas de ccache:"
+ccache -s
 
 echo "======================================================="
 echo " ¡Despliegue finalizado con éxito! "
