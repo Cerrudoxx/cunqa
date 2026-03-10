@@ -80,6 +80,7 @@ message(STATUS "Install location will be: ${CMAKE_INSTALL_PREFIX}")
 set(CMAKE_INSTALL_LIBDIR "lib")
 set(CMAKE_INSTALL_BINDIR "bin")
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # =====================================================================
 
 # Fine tuning for CESGA machines (pybind11 cannot be found by default)
