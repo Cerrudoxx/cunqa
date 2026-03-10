@@ -6,7 +6,9 @@ if compgen -G "@COMM_FILEPATH@" > /dev/null; then
     erase_key $SLURM_JOB_ID "@COMM_FILEPATH@"
 fi
 
-if compgen -G "@CUNQA_PATH@/tmp_noisy_backend_$SLURM_JOB_ID.json" > /dev/null; then
-    rm "@CUNQA_PATH@/tmp_noisy_backend_$SLURM_JOB_ID.json"
-fi
+# (get_user_cunqa_dir)
+USER_DIR="${STORE:-$HOME}/.cunqa"
 
+if compgen -G "$USER_DIR/tmp_noisy_backend_$SLURM_JOB_ID.json" > /dev/null; then
+    rm "$USER_DIR/tmp_noisy_backend_$SLURM_JOB_ID.json"
+fi

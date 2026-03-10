@@ -82,7 +82,7 @@ configure_file(
     @ONLY
 )
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/epilog.sh" 
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/cunqa"
+        DESTINATION "share/cunqa"
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
                     GROUP_READ GROUP_EXECUTE 
                     WORLD_READ WORLD_EXECUTE)
