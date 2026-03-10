@@ -212,8 +212,10 @@ FetchContent_Declare(
     GIT_TAG        "v27.1.0"
 )
 FetchContent_MakeAvailable(pyzmq)
-install(DIRECTORY "${pyzmq_SOURCE_DIR}/zmq/" DESTINATION "${CMAKE_INSTALL_PREFIX}/zmq")
-install(TARGETS "_zmq" DESTINATION "${CMAKE_INSTALL_PREFIX}/zmq/backend/cython")
+# install(DIRECTORY "${pyzmq_SOURCE_DIR}/zmq/" DESTINATION "${CMAKE_INSTALL_PREFIX}/zmq")
+# install(TARGETS "_zmq" DESTINATION "${CMAKE_INSTALL_PREFIX}/zmq/backend/cython")
+install(DIRECTORY "${pyzmq_SOURCE_DIR}/zmq/" DESTINATION "zmq")
+install(TARGETS "_zmq" DESTINATION "zmq/backend/cython")
 
 # =====================================================================
 #  CUNQA SIMULATOR - CESGA Quantum Spain
