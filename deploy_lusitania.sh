@@ -58,14 +58,14 @@ if [ -n "$PYBIND_PATH" ]; then
 fi
 
 # ==============================================================================
-# 2. CONFIGURACIÓN DE COMPILADORES MPI Y BLAS
+# 2. CONFIGURACIÓN DE COMPILADORES
 # ==============================================================================
-export CC="ccache mpicc"
-export CXX="ccache mpicxx"
+export CC="ccache gcc"
+export CXX="ccache g++"
 export BLA_VENDOR=OpenBLAS
 
 # ==============================================================================
-# 3. LIMPIEZA PREVIA (CRUCIAL PARA EVITAR CHOQUES DE VERSIÓN DE BOOST)
+# 3. LIMPIEZA PREVIA 
 # ==============================================================================
 # echo ">>> Limpiando directorio de construcción..."
 # rm -rf build/
@@ -83,7 +83,9 @@ cmake -S . -B build/ \
     -DCMAKE_INSTALL_RPATH="$INSTALL_PREFIX/lib" \
     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE \
     -DNATIVE_ARCH=OFF \
-    -DDDSIM_NATIVE_ARCH=OFF
+    -DDDSIM_NATIVE_ARCH=OFF \
+    -DUSE_MPI_BTW_QPU=OFF \
+    -DUSE_ZMQ_BTW_QPU=ON
 
 # ==============================================================================
 # 5. COMPILACIÓN E INSTALACIÓN
