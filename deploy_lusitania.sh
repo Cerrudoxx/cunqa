@@ -67,9 +67,9 @@ export BLA_VENDOR=OpenBLAS
 # ==============================================================================
 # 3. LIMPIEZA PREVIA 
 # ==============================================================================
-# echo ">>> Limpiando directorio de construcción..."
-# rm -rf build/
-# mkdir -p build/
+echo ">>> Limpiando directorio de construcción..."
+rm -rf build/
+mkdir -p build/
 
 # ==============================================================================
 # 4. LANZAMIENTO DE CMAKE (Fase de configuración y descargas)
