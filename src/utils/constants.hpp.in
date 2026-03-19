@@ -153,16 +153,7 @@ enum INSTRUCTIONS {
 
     CU3,
 
-    CU,
-
-    CU2,
-    CR,
-    XXMYY,
-    XXPYY,
-
-    CU3,
-
-    CU,
+    CU,   
 
     CECR,
     CSWAP,
@@ -307,8 +298,7 @@ const std::unordered_map<std::string, int> INSTRUCTIONS_MAP = {
     // TWO QUBIT TWO PARAM
     {"cu2", CU2},
     {"cr", CR},
-    {"xxmyy", XXMYY},
-    {"xxpyy", XXPYY},
+
 
     // TWO QUBIT THREE PARAM
     {"cu3", CU3},
