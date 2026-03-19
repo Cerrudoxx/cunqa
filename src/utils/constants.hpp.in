@@ -51,6 +51,11 @@ const std::unordered_map<std::string, int> SIMULATORS_MAP {
   {"Cunqa", CUNQASIM},
 };
 
+inline const std::vector<std::string> SUPPORTED_SIMPLE_SIMULATORS = {"Aer", "Munich", "Maestro", "Qulacs", "Cunqa"};
+inline const std::vector<std::string> SUPPORTED_CC_SIMULATORS = {"Aer", "Munich", "Maestro", "Qulacs", "Cunqa"};
+inline const std::vector<std::string> SUPPORTED_QC_SIMULATORS = {"Aer", "Munich", "Maestro", "Qulacs", "Cunqa"};
+inline const std::vector<std::string> SUPPORTED_NOISY_SIMULATORS = {"Aer", "Munich"};
+
 
 enum INSTRUCTIONS {
     UNITARY,
@@ -135,7 +140,6 @@ enum INSTRUCTIONS {
     CRY,
     CRZ,
     CP,
-    CPTP,
     CU1,
     RXX,
     RYY,
@@ -146,6 +150,15 @@ enum INSTRUCTIONS {
 
     CU2,
     CR,
+
+    CU3,
+
+    CU,
+
+    CU2,
+    CR,
+    XXMYY,
+    XXPYY,
 
     CU3,
 
@@ -283,7 +296,6 @@ const std::unordered_map<std::string, int> INSTRUCTIONS_MAP = {
     {"cry", CRY},
     {"crz", CRZ},
     {"cp", CP},
-    {"cptp", CPTP},
     {"cu1", CU1},
     {"rxx", RXX},
     {"ryy", RYY},
@@ -295,6 +307,8 @@ const std::unordered_map<std::string, int> INSTRUCTIONS_MAP = {
     // TWO QUBIT TWO PARAM
     {"cu2", CU2},
     {"cr", CR},
+    {"xxmyy", XXMYY},
+    {"xxpyy", XXPYY},
 
     // TWO QUBIT THREE PARAM
     {"cu3", CU3},

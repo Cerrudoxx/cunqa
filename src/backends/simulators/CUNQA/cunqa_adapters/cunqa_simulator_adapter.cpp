@@ -1,6 +1,7 @@
 #include <string>
 #include <unordered_map>
 #include <stack>
+#include <queue>
 #include <chrono>
 #include <functional>
 #include <cstdlib>
@@ -16,6 +17,24 @@
 #include "logger.hpp"
 
 namespace {
+
+struct LocalCCIDs {
+    std::string sendr;
+    std::string recvr;
+
+    bool operator==(const LocalCCIDs& other) const {
+        return sendr == other.sendr && recvr == other.recvr;
+    }
+}; // Struct to mimic classical communications when vQPUs deployed with quantum communications
+
+struct LocalIDsHash {
+    std::size_t operator()(const LocalCCIDs& local_cc_ids) const noexcept {
+        std::size_t h1 = std::hash<std::string>{}(local_cc_ids.sendr);
+        std::size_t h2 = std::hash<std::string>{}(local_cc_ids.recvr);
+        return h1 ^ (h2 << 1);
+    }
+};
+
 struct TaskState {
     std::string id;
     cunqa::JSON::const_iterator it, end;
@@ -31,6 +50,7 @@ struct GlobalState {
     int n_qubits = 0, n_clbits = 0;
     std::map<std::size_t, bool> creg;
     std::unordered_map<std::string, std::stack<int>> qc_meas;
+    std::unordered_map<LocalCCIDs, std::queue<int>, LocalIDsHash> local_cc_queue; // To mimic classical communications when executing with quantum communications
     bool ended = false;
     cunqa::comm::ClassicalChannel* chan = nullptr;
 };
@@ -39,7 +59,8 @@ struct GlobalState {
 std::string execute_shot_(
     Executor& executor, 
     const std::vector<cunqa::QuantumTask>& quantum_tasks, 
-    cunqa::comm::ClassicalChannel* classical_channel
+    cunqa::comm::ClassicalChannel* classical_channel,
+    const bool allows_qc
 )
 {
     std::unordered_map<std::string, TaskState> Ts;
@@ -67,9 +88,13 @@ std::string execute_shot_(
 
     auto generate_entanglement_ = [&]() {
         int meas1 = executor.apply_measure({G.n_qubits - 1});
+        if (meas1) {
+            executor.apply_gate("x", {G.n_qubits - 1});
+        } 
         int meas2 = executor.apply_measure({G.n_qubits - 2});
-        if (meas1) executor.apply_gate("x", {G.n_qubits - 1});
-        if (meas2) executor.apply_gate("x", {G.n_qubits - 2});
+        if (meas2) {
+            executor.apply_gate("x", {G.n_qubits - 2});
+        }
         executor.apply_gate("h", {G.n_qubits - 2});
         executor.apply_gate("cx", {G.n_qubits - 2, G.n_qubits - 1});
     };
@@ -154,8 +179,19 @@ std::string execute_shot_(
             auto qpu_id = inst.at("qpus").get<std::vector<std::string>>()[0];
             auto clbits = inst.at("clbits").get<std::vector<int>>();  
 
-            for (const auto& clbit: clbits)
-                classical_channel->send_measure(G.creg[clbit + T.zero_clbit], qpu_id);
+            if (allows_qc) {
+                LocalCCIDs local_cc_ids = {
+                    .sendr = T.id, 
+                    .recvr = Ts[qpu_id].id
+                };  
+                for (auto& clbit : clbits) {
+                    G.local_cc_queue[local_cc_ids].push(G.creg[clbit + T.zero_clbit]);
+                }
+            } else {
+                for (const auto& clbit: clbits) {
+                    classical_channel->send_measure(G.creg[clbit + T.zero_clbit], qpu_id);
+                }
+            }
             break;
         }
         case cunqa::constants::RECV:
@@ -163,9 +199,25 @@ std::string execute_shot_(
             auto qpu_id = inst.at("qpus").get<std::vector<std::string>>()[0];
             auto clbits = inst.at("clbits").get<std::vector<int>>();
 
-            for (const auto& clbit: clbits) {
-                int measurement = classical_channel->recv_measure(qpu_id);
-                G.creg[clbit + T.zero_clbit] = (measurement == 1);
+            if (allows_qc) {
+                LocalCCIDs local_cc_ids = {
+                    .sendr = Ts[qpu_id].id, 
+                    .recvr = T.id
+                };
+                if (G.local_cc_queue.contains(local_cc_ids) && !G.local_cc_queue.at(local_cc_ids).empty()) {
+                    for (const auto& clbit: clbits) {
+                        G.creg[clbit + T.zero_clbit] = (G.local_cc_queue.at(local_cc_ids).front() == 1);
+                        G.local_cc_queue.at(local_cc_ids).pop();
+                    }
+                    T.blocked = false;
+                } else {
+                    T.blocked = true;
+                }    
+            } else {
+                for (const auto& clbit: clbits) {
+                    int measurement = classical_channel->recv_measure(qpu_id);
+                    G.creg[clbit + T.zero_clbit] = (measurement == 1);
+                }
             }
             break;
         }
@@ -192,16 +244,12 @@ std::string execute_shot_(
             executor.apply_gate("h", {qubits[0] + T.zero_qubit});
 
             int result = executor.apply_measure({qubits[0] + T.zero_qubit});
-            int communication_result = executor.apply_measure({G.n_qubits - 2});
 
             G.qc_meas[T.id].push(result);
-            G.qc_meas[T.id].push(communication_result);
-            //Reset
+            G.qc_meas[T.id].push(executor.apply_measure({G.n_qubits - 2}));
+
             if (result) {
                 executor.apply_gate("x", {qubits[0] + T.zero_qubit});
-            }
-            if (communication_result) {
-                executor.apply_gate("x", {G.n_qubits - 2});
             }
 
             // Unlock QRECV
@@ -231,11 +279,6 @@ std::string execute_shot_(
 
             // Swap the value to the desired qubit
             executor.apply_gate("swap", {G.n_qubits - 1, qubits[0] + T.zero_qubit});
-            //Reset
-            int communcation_result = executor.apply_measure({G.n_qubits - 1});
-            if (communcation_result) {
-                executor.apply_gate("x", {G.n_qubits - 1});
-            }
             break;
         }
         case cunqa::constants::EXPOSE:
@@ -359,7 +402,7 @@ JSON CunqaSimulatorAdapter::simulate([[maybe_unused]] const Backend* backend)
 
 }
 
-JSON CunqaSimulatorAdapter::simulate(comm::ClassicalChannel* classical_channel)
+JSON CunqaSimulatorAdapter::simulate(comm::ClassicalChannel* classical_channel, const bool allows_qc)
 {
     LOGGER_DEBUG("Cunqa dynamic simulation");
     std::map<std::string, std::size_t> meas_counter;
@@ -375,15 +418,44 @@ JSON CunqaSimulatorAdapter::simulate(comm::ClassicalChannel* classical_channel)
     if (size(qc.quantum_tasks) > 1)
         n_qubits += 2;
 
-    Executor executor(n_qubits);
+
     auto start = std::chrono::high_resolution_clock::now();
+#ifdef OPENMP_IN_QC
+    if (size(qc.quantum_tasks) > 1) { // Quantum communications 
+        #pragma omp parallel
+        {
+            std::map<std::string, std::size_t> local_counter;
+            
+            Executor executor(n_qubits);
+
+            #pragma omp for
+            for (std::size_t i = 0; i < shots; i++) {
+                local_counter[execute_shot_(executor, qc.quantum_tasks, classical_channel, allows_qc)]++;
+                executor.restart_statevector();
+            }
+
+            #pragma omp critical
+            for (auto& [key, val] : local_counter)
+                meas_counter[key] += val;
+        }
+    } else { // As if OPENMP_IN_QC not enabled
+        Executor executor(n_qubits);
+        for (int i = 0; i < shots; i++)
+        {
+            meas_counter[execute_shot_(executor, qc.quantum_tasks, classical_channel, allows_qc)]++;
+            executor.restart_statevector();
+            
+        } // End all shots
+    }
+#else
+    Executor executor(n_qubits);
     for (int i = 0; i < shots; i++)
     {
-        meas_counter[execute_shot_(executor, qc.quantum_tasks, classical_channel)]++;
+        meas_counter[execute_shot_(executor, qc.quantum_tasks, classical_channel, allows_qc)]++;
         executor.restart_statevector();
         
     } // End all shots
-
+#endif
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> duration = end - start;
     float time_taken = duration.count();

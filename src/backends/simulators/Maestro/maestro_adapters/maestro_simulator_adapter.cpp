@@ -1,6 +1,7 @@
 
 #include <unordered_map>
 #include <stack>
+#include <queue>
 #include <chrono>
 #include <functional>
 #include <cstdlib>
@@ -19,6 +20,23 @@
 
 namespace {
 
+struct LocalCCIDs {
+    std::string sendr;
+    std::string recvr;
+
+    bool operator==(const LocalCCIDs& other) const {
+        return sendr == other.sendr && recvr == other.recvr;
+    }
+}; // Struct to mimic classical communications when vQPUs deployed with quantum communications
+
+struct LocalIDsHash {
+    std::size_t operator()(const LocalCCIDs& local_cc_ids) const noexcept {
+        std::size_t h1 = std::hash<std::string>{}(local_cc_ids.sendr);
+        std::size_t h2 = std::hash<std::string>{}(local_cc_ids.recvr);
+        return h1 ^ (h2 << 1);
+    }
+};
+
 struct TaskState {
     std::string id;
     cunqa::JSON::const_iterator it, end;
@@ -33,6 +51,7 @@ struct GlobalState {
     unsigned long n_qubits = 0, n_clbits = 0;
     std::map<std::size_t, bool> creg;
     std::unordered_map<std::string, std::stack<int>> qc_meas;
+    std::unordered_map<LocalCCIDs, std::queue<int>, LocalIDsHash> local_cc_queue; // To mimic classical communications when executing with quantum communications
     bool ended = false;
 };
 
@@ -40,7 +59,8 @@ struct GlobalState {
 std::string execute_shot_(
     void* simulator, 
     const std::vector<cunqa::QuantumTask>& quantum_tasks, 
-    cunqa::comm::ClassicalChannel* classical_channel
+    cunqa::comm::ClassicalChannel* classical_channel,
+    const bool allows_qc
 )
 {
     std::unordered_map<std::string, TaskState> Ts;
@@ -245,15 +265,10 @@ std::string execute_shot_(
         }
         case cunqa::constants::CCX:
         {
-            std::vector<unsigned long> ctrls;
-            for (int i = 0; i < qubits.size() - 1; i++) {
-                if (qubits[i] == -1) {
-                    ctrls[i] = G.n_qubits - 1;
-                } else {
-                    ctrls[i] = qubits[i];
-                }
+            for (int i = 0; i < qubits.size(); i++) {
+                qubits[i] = (qubits[i] == -1) ? G.n_qubits - 1 : qubits[i] + T.zero_qubit;
             }
-            ApplyCCX(simulator, ctrls[0], ctrls[1], qubits[1] + T.zero_qubit);
+            ApplyCCX(simulator, qubits[0], qubits[1], qubits[2]);
             break;
         }
         case cunqa::constants::CSWAP:
@@ -269,13 +284,32 @@ std::string execute_shot_(
             ApplyCU(simulator, control, qubits[0] + T.zero_qubit, params[0], params[1], params[2], params[3]);
             break;
         }
+        case constants::RESET:
+        {
+            std::vector<unsigned long int> uliqubits(
+                qubits.begin(), qubits.end()
+            );
+		    ApplyReset(simulator, uliqubits.data(), qubits.size());
+            break;
+        }
         case cunqa::constants::SEND:
         {
             auto qpu_id = inst.at("qpus").get<std::vector<std::string>>()[0];
             auto clbits = inst.at("clbits").get<std::vector<int>>();  
 
-            for (const auto& clbit: clbits)
-                classical_channel->send_measure(G.creg[clbit + T.zero_clbit], qpu_id);
+            if (allows_qc) {
+                LocalCCIDs local_cc_ids = {
+                    .sendr = T.id, 
+                    .recvr = Ts[qpu_id].id
+                };  
+                for (auto& clbit : clbits) {
+                    G.local_cc_queue[local_cc_ids].push(G.creg[clbit + T.zero_clbit]);
+                }
+            } else {
+                for (const auto& clbit: clbits) {
+                    classical_channel->send_measure(G.creg[clbit + T.zero_clbit], qpu_id);
+                }
+            }
             break;
         }
         case cunqa::constants::RECV:
@@ -283,9 +317,25 @@ std::string execute_shot_(
             auto qpu_id = inst.at("qpus").get<std::vector<std::string>>()[0];
             auto clbits = inst.at("clbits").get<std::vector<int>>();
 
-            for (const auto& clbit: clbits) {
-                int measurement = classical_channel->recv_measure(qpu_id);
-                G.creg[clbit + T.zero_clbit] = (measurement == 1);
+            if (allows_qc) {
+                LocalCCIDs local_cc_ids = {
+                    .sendr = Ts[qpu_id].id, 
+                    .recvr = T.id
+                };
+                if (G.local_cc_queue.contains(local_cc_ids) && !G.local_cc_queue.at(local_cc_ids).empty()) {
+                    for (const auto& clbit: clbits) {
+                        G.creg[clbit + T.zero_clbit] = (G.local_cc_queue.at(local_cc_ids).front() == 1);
+                        G.local_cc_queue.at(local_cc_ids).pop();
+                    }
+                    T.blocked = false;
+                } else {
+                    T.blocked = true;
+                }
+            } else {
+                for (const auto& clbit: clbits) {
+                    int measurement = classical_channel->recv_measure(qpu_id);
+                    G.creg[clbit + T.zero_clbit] = (measurement == 1);
+                }
             }
             break;
         }
@@ -319,8 +369,10 @@ std::string execute_shot_(
             int aux_meas = static_cast<int>(Measure(simulator, q2, 1));
             G.qc_meas[T.id].push(aux_meas);
 
-            const unsigned long int q3[]{ G.n_qubits - 2, qubits[0] + T.zero_qubit };
-            ApplyReset(simulator, q3, 2);
+            if (measurement_as_int) {
+                const unsigned long int q3[]{ qubits[0] + T.zero_qubit };
+                ApplyReset(simulator, q3, 1);
+            }
 
             // Unlock QRECV
             Ts[inst.at("qpus")[0]].blocked = false;
@@ -350,8 +402,6 @@ std::string execute_shot_(
             // Swap the value to the desired qubit
             ApplySwap(simulator, G.n_qubits - 1, qubits[0] + T.zero_qubit);
 
-            const unsigned long int q[]{ G.n_qubits - 1 };
-			ApplyReset(simulator, q, 1);
             break;
         }
         case cunqa::constants::EXPOSE:
@@ -593,7 +643,7 @@ JSON MaestroSimulatorAdapter::simulate(const Backend* backend)
     return {};
 }
 
-JSON MaestroSimulatorAdapter::simulate(comm::ClassicalChannel* classical_channel)
+JSON MaestroSimulatorAdapter::simulate(comm::ClassicalChannel* classical_channel, const bool allows_qc)
 {
     LOGGER_DEBUG("Maestro dynamic simulation");
     std::map<std::string, std::size_t> meas_counter;
@@ -668,6 +718,45 @@ JSON MaestroSimulatorAdapter::simulate(comm::ClassicalChannel* classical_channel
         simulationType = 0; // statevector
     }
 
+    auto start = std::chrono::high_resolution_clock::now();
+#ifdef OPENMP_IN_QC
+    if (size(qc.quantum_tasks) > 1) { // Quantum communications 
+        #pragma omp parallel
+        {
+            std::map<std::string, std::size_t> local_counter;
+            
+            auto simulatorHandle = CreateSimulator(simulatorType, simulationType);
+            auto simulator = GetSimulator(simulatorHandle); // Not error handling
+
+            #pragma omp for
+            for (std::size_t i = 0; i < shots; i++) {
+                AllocateQubits(simulator, n_qubits);
+                InitializeSimulator(simulator);
+                local_counter[execute_shot_(simulator, qc.quantum_tasks, classical_channel, allows_qc)]++;
+                ClearSimulator(simulator);
+            }
+
+            #pragma omp critical
+            for (auto& [key, val] : local_counter)
+                meas_counter[key] += val;
+        }
+    } else { // As if OPENMP_IN_QC not enabled
+        auto simulatorHandle = CreateSimulator(simulatorType, simulationType);
+        if (simulatorHandle == 0) {
+            LOGGER_ERROR("Error creating the Maestro Simulator.");
+            return {{"ERROR", "Unable to create the Maestro Simulator."}};
+        }
+        auto simulator = GetSimulator(simulatorHandle);
+
+        for (std::size_t i = 0; i < shots; i++)
+        {
+            AllocateQubits(simulator, n_qubits); // From CUNQA: Maybe allocate after shots and restart the state in each shot for better performance?
+            InitializeSimulator(simulator);
+            meas_counter[execute_shot_(simulator, qc.quantum_tasks, classical_channel, allows_qc)]++;
+            ClearSimulator(simulator);
+        } // End all shots
+    }
+#else
     auto simulatorHandle = CreateSimulator(simulatorType, simulationType);
     if (simulatorHandle == 0) {
         LOGGER_ERROR("Error creating the Maestro Simulator.");
@@ -675,14 +764,14 @@ JSON MaestroSimulatorAdapter::simulate(comm::ClassicalChannel* classical_channel
     }
     auto simulator = GetSimulator(simulatorHandle);
 
-    auto start = std::chrono::high_resolution_clock::now();
     for (std::size_t i = 0; i < shots; i++)
     {
         AllocateQubits(simulator, n_qubits); // From CUNQA: Maybe allocate after shots and restart the state in each shot for better performance?
         InitializeSimulator(simulator);
-        meas_counter[execute_shot_(simulator, qc.quantum_tasks, classical_channel)]++;
+        meas_counter[execute_shot_(simulator, qc.quantum_tasks, classical_channel, allows_qc)]++;
         ClearSimulator(simulator);
     } // End all shots
+#endif
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> duration = end - start;
     float time_taken = duration.count();

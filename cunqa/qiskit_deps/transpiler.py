@@ -92,10 +92,6 @@ def transpiler(
             qc = circuit
 
         elif isinstance(circuit, CunqaCircuit):
-            # if circuit.has_cc or circuit.has_qc:
-            #     raise TypeError(f"CunqaCircuit with distributed instructions was provided, for ""
-            #                     f"which transpilation is not avaliable at the moment.")
-            
             qc = _from_ir_to_qc(circuit.info)
 
         elif isinstance(circuit, dict):
@@ -275,7 +271,7 @@ def _from_ir_to_qc(circuit_dict: dict) -> QuantumCircuit:
 
         elif instruction_name == "unitary":
 
-            qc.unitary(instruction.get("elements", []), qiskit_Qubit)
+            qc.unitary(instruction.get("matrix", []), qiskit_Qubit)
 
         elif instruction_name == "cif":
 

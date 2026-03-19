@@ -1,9 +1,9 @@
 
 #include "munich_simulator_adapter.hpp"
-#include "munich_helpers.hpp"
 
 #include <unordered_map>
 #include <stack>
+#include <queue>
 #include <chrono>
 #include <thread>
 #include <functional>
@@ -12,91 +12,27 @@
 
 #include "quantum_task.hpp"
 #include "backends/simulators/simulator_strategy.hpp"
-
 #include "logger.hpp"
 
 using namespace qc;
 
 namespace {
-const std::unordered_map<int, OpType> MUNICH_INSTRUCTIONS_MAP = {
-    // MEASURE
-    {cunqa::constants::MEASURE, OpType::Measure},
 
-    // ONE QUBIT NO PARAM
-    {cunqa::constants::ID, OpType::I},
-    {cunqa::constants::X, OpType::X},
-    {cunqa::constants::Y, OpType::Y},
-    {cunqa::constants::Z, OpType::Z},
-    {cunqa::constants::H, OpType::H},
-    {cunqa::constants::S, OpType::S},
-    {cunqa::constants::SDG, OpType::Sdg},
-    {cunqa::constants::SX, OpType::SX},
-    {cunqa::constants::SXDG, OpType::SXdg},
-    {cunqa::constants::T, OpType::T},
-    {cunqa::constants::TDG, OpType::Tdg},
-    {cunqa::constants::V, OpType::V},
-    {cunqa::constants::VDG, OpType::Vdg},
+struct LocalCCIDs {
+    std::string sendr;
+    std::string recvr;
 
-    // ONE QUBIT ONE PARAM
-    {cunqa::constants::RX, OpType::RX},
-    {cunqa::constants::RY, OpType::RY},
-    {cunqa::constants::RZ, OpType::RZ},
-    {cunqa::constants::GLOBALP, OpType::GPhase},
-    {cunqa::constants::P, OpType::P},
-    {cunqa::constants::U1, OpType::P},
+    bool operator==(const LocalCCIDs& other) const {
+        return sendr == other.sendr && recvr == other.recvr;
+    }
+}; // Struct to mimic classical communications when vQPUs deployed with quantum communications
 
-    // ONE QUBIT TWO PARAM
-    {cunqa::constants::U2, OpType::U2},
-
-    // ONE QUBIT THREE PARAM 
-    {cunqa::constants::U3, OpType::U},
-
-    // TWO QUBIT NO PARAM
-    {cunqa::constants::CX, OpType::X},
-    {cunqa::constants::CY, OpType::Y},
-    {cunqa::constants::CZ, OpType::Z},
-    {cunqa::constants::CH, OpType::H},
-    {cunqa::constants::CSX, OpType::SX},
-    {cunqa::constants::CS, OpType::S},
-    {cunqa::constants::CSDG, OpType::Sdg},
-    {cunqa::constants::SWAP, OpType::SWAP},
-    {cunqa::constants::ISWAP, OpType::iSWAP},
-    {cunqa::constants::ECR, OpType::ECR},
-    {cunqa::constants::DCX, OpType::DCX},
-
-    // TWO QUBIT ONE PARAM
-    {cunqa::constants::CU1, OpType::P},
-    {cunqa::constants::CP, OpType::P},
-    {cunqa::constants::CRX, OpType::RX},
-    {cunqa::constants::CRY, OpType::RY},
-    {cunqa::constants::CRZ, OpType::RZ},
-    {cunqa::constants::RXX, OpType::RXX},
-    {cunqa::constants::RYY, OpType::RYY},
-    {cunqa::constants::RZZ, OpType::RZZ},
-    {cunqa::constants::RZX, OpType::RZX},
-    {cunqa::constants::XXMYY, OpType::XXminusYY},
-    {cunqa::constants::XXPYY, OpType::XXplusYY},
-
-    // TWO QUBITS TWO PARAMS
-    {cunqa::constants::CU2, OpType::U2},
-
-    // TWO QUBITS THREE PARAMS
-    {cunqa::constants::CU3, OpType::U},
-
-    // THREE QUBITS NO PARAMS
-    {cunqa::constants::CSWAP, OpType::SWAP},
-    
-    // MULTICONTROLED NO PARAM
-    {cunqa::constants::MCX, OpType::X},
-
-    // MULTICONTROLED PARAM
-    {cunqa::constants::MCP, OpType::P},
-
-    // SPECIAL
-    {cunqa::constants::RESET, OpType::Reset},
-    {cunqa::constants::BARRIER, OpType::Barrier},
-
-
+struct LocalIDsHash {
+    std::size_t operator()(const LocalCCIDs& local_cc_ids) const noexcept {
+        std::size_t h1 = std::hash<std::string>{}(local_cc_ids.sendr);
+        std::size_t h2 = std::hash<std::string>{}(local_cc_ids.recvr);
+        return h1 ^ (h2 << 1);
+    }
 };
 
 struct TaskState {
@@ -113,6 +49,7 @@ struct GlobalState {
     int n_qubits = 0, n_clbits = 0;
     std::map<std::size_t, bool> creg;
     std::unordered_map<std::string, std::stack<int>> qc_meas;
+    std::unordered_map<LocalCCIDs, std::queue<int>, LocalIDsHash> local_cc_queue;  // To mimic classical communications when executing with quantum communications
     bool ended = false;
 };
 
@@ -123,7 +60,8 @@ namespace sim {
 
 std::string MunichSimulatorAdapter::execute_shot_(
     const std::vector<QuantumTask> &quantum_tasks, 
-    comm::ClassicalChannel *classical_channel
+    comm::ClassicalChannel *classical_channel,
+    const bool allows_qc
 )
 {
     std::unordered_map<std::string, TaskState> Ts;
@@ -238,8 +176,8 @@ std::string MunichSimulatorAdapter::execute_shot_(
         case constants::ISWAP:
         case constants::DCX:
         {
-            qc::Targets targets = {static_cast<unsigned int>(qubits[0] + T.zero_qubit), static_cast<unsigned int>(qubits[1] + T.zero_qubit)};
-            auto two_gate = std::make_unique<qc::StandardOperation>(targets, MUNICH_INSTRUCTIONS_MAP.at(inst_type));
+            Targets targets = {static_cast<unsigned int>(qubits[0] + T.zero_qubit), static_cast<unsigned int>(qubits[1] + T.zero_qubit)};
+            auto two_gate = std::make_unique<StandardOperation>(targets, MUNICH_INSTRUCTIONS_MAP.at(inst_type));
             applyOperationToStateAdapter(std::move(two_gate));
             break;
         }
@@ -266,8 +204,8 @@ std::string MunichSimulatorAdapter::execute_shot_(
         case constants::XXPYY:
         {
             auto params = inst.at("params").get<std::vector<double>>();
-            qc::Targets targets = {static_cast<unsigned int>(qubits[0] + T.zero_qubit), static_cast<unsigned int>(qubits[1] + T.zero_qubit)};
-            auto two_gate = std::make_unique<qc::StandardOperation>(targets, MUNICH_INSTRUCTIONS_MAP.at(inst_type), params);
+            Targets targets = {static_cast<unsigned int>(qubits[0] + T.zero_qubit), static_cast<unsigned int>(qubits[1] + T.zero_qubit)};
+            auto two_gate = std::make_unique<StandardOperation>(targets, MUNICH_INSTRUCTIONS_MAP.at(inst_type), params);
             applyOperationToStateAdapter(std::move(two_gate));
             break;
         }
@@ -289,41 +227,30 @@ std::string MunichSimulatorAdapter::execute_shot_(
         }
         case constants::MCX:
         {
-            std::vector<int> ctrls;
-            for (int i = 0; i < qubits.size() - 1; i++) {
-                if (qubits[i] == -1) {
-                    ctrls.push_back(G.n_qubits - 1);
-                } else {
-                    ctrls.push_back(qubits[i] + T.zero_qubit); 
-                }
+            for (size_t i = 0; i < qubits.size(); i++) {
+                qubits[i] = (qubits[i] == -1) ? G.n_qubits - 1 : qubits[i] + T.zero_qubit;
             }
-            Controls controls(ctrls.begin(), ctrls.end());
-            int target_indx = qubits.size() - 1;
-            auto mc_gate = std::make_unique<StandardOperation>(controls, qubits[target_indx] + T.zero_qubit, MUNICH_INSTRUCTIONS_MAP.at(inst_type));
+            Controls controls(qubits.begin(), qubits.end() - 1);
+            auto mc_gate = std::make_unique<StandardOperation>(controls, qubits[qubits.size() - 1], MUNICH_INSTRUCTIONS_MAP.at(inst_type));
             applyOperationToStateAdapter(std::move(mc_gate));
             break;
         }
         case constants::MCP:
         {
             auto params = inst.at("params").get<std::vector<double>>();
-            std::vector<int> ctrls;
-            for (int i = 0; i < qubits.size() - 1; i++) {
-                if (qubits[i] == -1) {
-                    ctrls.push_back(G.n_qubits - 1);
-                } else {
-                    ctrls.push_back(qubits[i] + T.zero_qubit); 
-                }
+            for (size_t i = 0; i < qubits.size(); i++) {
+                qubits[i] = (qubits[i] == -1) ? G.n_qubits - 1 : qubits[i] + T.zero_qubit;
             }
-            Controls controls(ctrls.begin(), ctrls.end());
-            int target_indx = qubits.size() - 1;
-            auto mc_gate = std::make_unique<StandardOperation>(controls, qubits[target_indx] + T.zero_qubit, MUNICH_INSTRUCTIONS_MAP.at(inst_type), params);
+            Controls controls(qubits.begin(), qubits.end() - 1);
+            auto mc_gate = std::make_unique<StandardOperation>(controls, qubits[qubits.size() - 1], MUNICH_INSTRUCTIONS_MAP.at(inst_type), params);
             applyOperationToStateAdapter(std::move(mc_gate));
             break;
         }
         case constants::RESET:
         {
-            auto reset = std::make_unique<StandardOperation>(qubits[0] + T.zero_qubit, MUNICH_INSTRUCTIONS_MAP.at(inst_type));
-            applyOperationToStateAdapter(std::move(reset));
+            LOGGER_ERROR("RESET not supported because the following error raises: DD for gatereset not available!");
+            //auto reset = std::make_unique<StandardOperation>(qubits[0] + T.zero_qubit, MUNICH_INSTRUCTIONS_MAP.at(inst_type));
+            //applyOperationToStateAdapter(std::move(reset));
             break;
         }
         case constants::BARRIER:
@@ -337,8 +264,19 @@ std::string MunichSimulatorAdapter::execute_shot_(
             auto qpu_id = inst.at("qpus").get<std::vector<std::string>>()[0];
             auto clbits = inst.at("clbits").get<std::vector<int>>();   
 
-            for (const auto& clbit: clbits)
-                classical_channel->send_measure(G.creg[clbit + T.zero_clbit], qpu_id);
+            if (allows_qc) {
+                LocalCCIDs local_cc_ids = {
+                    .sendr = T.id, 
+                    .recvr = Ts[qpu_id].id
+                }; 
+                for (auto& clbit : clbits) {
+                    G.local_cc_queue[local_cc_ids].push(G.creg[clbit + T.zero_clbit]);
+                }
+            } else {
+                for (const auto& clbit: clbits) {
+                    classical_channel->send_measure(G.creg[clbit + T.zero_clbit], qpu_id);
+                }
+            }
             break;
         }
         case constants::RECV:
@@ -346,9 +284,26 @@ std::string MunichSimulatorAdapter::execute_shot_(
             auto qpu_id = inst.at("qpus").get<std::vector<std::string>>()[0];
             auto clbits = inst.at("clbits").get<std::vector<int>>();
 
-            for (const auto& clbit: clbits) {
-                int measurement = classical_channel->recv_measure(qpu_id);
-                G.creg[clbit + T.zero_clbit] = (measurement == 1);
+            if (allows_qc) {
+                LocalCCIDs local_cc_ids = {
+                    .sendr = Ts[qpu_id].id, 
+                    .recvr = T.id
+                };
+                if (G.local_cc_queue.contains(local_cc_ids) && !G.local_cc_queue.at(local_cc_ids).empty()) {
+                    for (const auto& clbit: clbits) {
+                        G.creg[clbit + T.zero_clbit] = (G.local_cc_queue.at(local_cc_ids).front() == 1);
+                        G.local_cc_queue.at(local_cc_ids).pop();
+                    }
+                    T.blocked = false;
+                } else {
+                    T.blocked = true;
+                }
+                
+            } else {
+                for (const auto& clbit: clbits) {
+                    int measurement = classical_channel->recv_measure(qpu_id);
+                    G.creg[clbit + T.zero_clbit] = (measurement == 1);
+                }
             }
             break;
         }
@@ -385,8 +340,6 @@ std::string MunichSimulatorAdapter::execute_shot_(
             {
                 auto reset_teleported = std::make_unique<StandardOperation>(qubits[0] + T.zero_qubit, OpType::X);
                 applyOperationToStateAdapter(std::move(reset_teleported));
-                auto reset_epr = std::make_unique<StandardOperation>(G.n_qubits - 2, OpType::X);
-                applyOperationToStateAdapter(std::move(reset_epr));
             }
 
             // Unlock QRECV
@@ -421,11 +374,6 @@ std::string MunichSimulatorAdapter::execute_shot_(
             auto swap = std::make_unique<StandardOperation>(targets, OpType::SWAP);
             applyOperationToStateAdapter(std::move(swap));
 
-            int result = measureAdapter(G.n_qubits - 1) - '0';
-            if (result) {
-                auto reset_epr = std::make_unique<StandardOperation>(G.n_qubits - 1, OpType::X);
-                applyOperationToStateAdapter(std::move(reset_epr));
-            }
             break;
         }
         case constants::EXPOSE:
@@ -537,18 +485,19 @@ JSON MunichSimulatorAdapter::simulate(const Backend* backend)
     // TODO: Change the format with the free functions
     try
     {   
-        std::string circuit = quantum_task_to_Munich(quantum_task);
+        size_t n_qubits = quantum_task.config.at("num_qubits");
+        size_t n_clbits = quantum_task.config.at("num_clbits");
+        size_t seed = quantum_task.config.contains("seed") ? quantum_task.config.at("seed").get<size_t>() : 0;
+
+        auto mqt_circuit = std::make_unique<QuantumComputation>(n_qubits, n_clbits, seed); 
+
+        quantum_task_to_mqt_circuit(quantum_task.circuit, *mqt_circuit);
         
-        auto mqt_circuit = std::make_unique<QuantumComputation>(std::move(QuantumComputation::fromQASM(circuit)));
-
         float time_taken;
-        int n_qubits = quantum_task.config.at("num_qubits");
-
         JSON noise_model_json = backend->config.at("noise_model");
         if (!noise_model_json.empty()) {
-            LOGGER_DEBUG("Noise model execution");
             const ApproximationInfo approx_info{noise_model_json["step_fidelity"], noise_model_json["approx_steps"], ApproximationInfo::FidelityDriven};
-            StochasticNoiseSimulator sim(std::move(mqt_circuit), approx_info, quantum_task.config["seed"], "APD", noise_model_json["noise_prob"],
+            StochasticNoiseSimulator sim(std::move(mqt_circuit), approx_info, seed, "APD", noise_model_json["noise_prob"],
                                             noise_model_json["noise_prob_t1"], noise_model_json["noise_prob_multi"]);
 
             auto start = std::chrono::high_resolution_clock::now();
@@ -558,7 +507,6 @@ JSON MunichSimulatorAdapter::simulate(const Backend* backend)
             time_taken = duration.count();
 
             if (!result.empty()) {
-                LOGGER_DEBUG("Result non empty");
                 return {{"counts", result}, {"time_taken", time_taken}};
             }
             throw std::runtime_error("QASM format is not correct.");
@@ -587,7 +535,7 @@ JSON MunichSimulatorAdapter::simulate(const Backend* backend)
     return {}; // To avoid no-return warning
 }
 
-JSON MunichSimulatorAdapter::simulate(comm::ClassicalChannel *classical_channel)
+JSON MunichSimulatorAdapter::simulate(comm::ClassicalChannel *classical_channel, const bool allows_qc)
 {
     LOGGER_DEBUG("Munich dynamic simulation");
     // TODO: Avoid the static casting?
@@ -608,7 +556,7 @@ JSON MunichSimulatorAdapter::simulate(comm::ClassicalChannel *classical_channel)
     for (std::size_t i = 0; i < shots; i++)
     {   
         initializeSimulationAdapter(n_qubits);
-        meas_counter[execute_shot_(p_qca->quantum_tasks, classical_channel)]++;
+        meas_counter[execute_shot_(p_qca->quantum_tasks, classical_channel, allows_qc)]++;
     } // End all shots
 
     auto end = std::chrono::high_resolution_clock::now();

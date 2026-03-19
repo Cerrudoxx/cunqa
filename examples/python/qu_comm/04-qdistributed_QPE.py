@@ -20,7 +20,7 @@ N_ANCILLA_QUBITS = 10
 N_REGISTER_QUBITS = 1
 PHASE_TO_COMPUTE = 1 / 2**3
 
-shots = 100
+shots = 10000
 SEED = 18
 
 try:
@@ -79,6 +79,7 @@ try:
     # 4. Post-processing results to extract estimated phase 
     counts = result_list[0].counts
     print(f"Counts: {counts}")
+    print(f"Time taken: {result_list[0].time_taken}")
 
     most_frequent_output = max(counts, key=counts.get)
     print(f"Most frequent output is {most_frequent_output}")

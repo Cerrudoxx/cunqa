@@ -16,7 +16,7 @@ __attribute__((constructor)) void initializeLogger() {
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console_sink->set_level(spdlog::level::warn);
 
-    const std::string log_path = cunqa::constants::get_user_cunqa_dir() + "/client_debug.log";
+    const std::string log_path = cunqa::constants::get_user_cunqa_dir() + "/logs/logging.log";
     auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(log_path, 10*1024*1024, 10, false); // 10 files of 10 MB each
     file_sink->set_level(spdlog::level::debug);
 
