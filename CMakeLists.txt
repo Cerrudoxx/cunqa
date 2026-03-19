@@ -472,8 +472,8 @@ set(BUILD_MQT_CORE_MLIR OFF CACHE BOOL "" FORCE)
 find_or_fetch_package(
   mqt-ddsim
   "git@github.com:munich-quantum-toolkit/ddsim.git"
-  "2.2.0"
-  "v2.2.0"
+  "1.24.0"
+  "v1.24.0"
 )
 set(CMAKE_CXX_FLAGS "${_ORIG_CXX_FLAGS}" CACHE STRING "" FORCE)
 set(CMAKE_CXX_FLAGS_DEBUG "${_ORIG_CXX_FLAGS_DEBUG}" CACHE STRING "" FORCE)
