@@ -22,7 +22,7 @@ echo ">>> Cargando módulos del sistema..."
 set +e
 module purge
 module load gcc/gcc-11.2.0 \
-            cmake/cmake-3.23 \
+            cmake/cmake-3.26.6 \
             openblas/openblas-0.3.24 \
             openmpi/openmpi-4.1.2-gcc11.2.0 \
             python/python-3.10 \

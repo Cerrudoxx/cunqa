@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.23)
 
 file(READ "${CMAKE_SOURCE_DIR}/VERSION.txt" PROJECT_VERSION)
 string(STRIP "${PROJECT_VERSION}" PROJECT_VERSION)
@@ -220,6 +220,77 @@ else()
 endif()
 
 
+
+# =====================================================================
+#  ZeroMQ stack (libzmq + cppzmq)
+# =====================================================================
+
+# -- libzmq -----------------------------------------------------------
+include(FetchContent)
+
+find_package(libzmq 4.3.5 QUIET)
+if(NOT ${PACKAGE_NAME}_FOUND)
+# Force options for minimal libzmq build
+  set(WITH_DOCS OFF CACHE BOOL "" FORCE)
+  set(WITH_PERF_TOOL OFF CACHE BOOL "" FORCE)
+  set(ZMQ_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  set(WITH_GNUTLS OFF CACHE BOOL "" FORCE)  # avoid optional TLS dependency
+  set(BUILD_SHARED ON CACHE BOOL "" FORCE)
+  set(BUILD_STATIC OFF CACHE BOOL "" FORCE)
+
+  # Fetch libzmq
+  FetchContent_Declare(
+    libzmq
+    GIT_REPOSITORY https://github.com/zeromq/libzmq.git
+    GIT_TAG v4.3.5
+  )
+
+  FetchContent_GetProperties(libzmq)
+  if(NOT libzmq_POPULATED)
+    FetchContent_Populate(libzmq)
+    add_subdirectory(${libzmq_SOURCE_DIR} ${libzmq_BINARY_DIR})
+  endif()
+  if(TARGET libzmq)
+    message(STATUS "libzmq target exists")
+  else()
+    message(STATUS "libzmq target DOES NOT exist")
+  endif()
+else()
+  message(STATUS "Found package libzmq: libzmq_DIR = ${libzmq_DIR}")
+endif()
+
+#-- cppzmq ------------------------------------------------------------
+find_package(cppzmq 4.9.0 QUIET)
+if(NOT cppzmq_FOUND)
+  set(CPPZMQ_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  FetchContent_Declare(
+    cppzmq
+    GIT_REPOSITORY https://github.com/zeromq/cppzmq.git
+    GIT_TAG v4.9.0
+  )
+
+  FetchContent_GetProperties(cppzmq)
+  if(NOT cppzmq_POPULATED)
+    FetchContent_Populate(cppzmq)
+    add_subdirectory(${cppzmq_SOURCE_DIR} ${cppzmq_BINARY_DIR})
+  endif()
+else()
+  message(STATUS "Found package cppzmq: cppzmq_DIR = ${cppzmq_DIR}")
+endif()
+
+# -- pyzmq -----------------------------------------------------------
+set(ZeroMQ_DIR "${libzmq_BINARY_DIR}" CACHE PATH "Path to ZeroMQConfig.cmake" FORCE)
+set(LDFLAGS "-Wl,-rpath,${ZMQ_PREFIX}")
+
+FetchContent_Declare(
+    pyzmq
+    GIT_REPOSITORY "git@github.com:zeromq/pyzmq.git"
+    GIT_TAG        "v27.1.0"
+)
+FetchContent_MakeAvailable(pyzmq)
+install(DIRECTORY "${pyzmq_SOURCE_DIR}/zmq/" DESTINATION "${CMAKE_INSTALL_PREFIX}/zmq")
+install(TARGETS "_zmq" DESTINATION "${CMAKE_INSTALL_PREFIX}/zmq/backend/cython")
+
 # =====================================================================
 #  SPDLOG - logging backend
 # =====================================================================
@@ -234,6 +305,16 @@ find_or_fetch_package(
   "v1.16.0"
 )
 install(TARGETS spdlog DESTINATION "${CMAKE_INSTALL_LIBDIR}") # does this fails with FindPackage??
+
+# =====================================================================
+#  MQT-DDSIM - quantum circuit simulator
+# =====================================================================
+find_or_fetch_package(
+  mqt-ddsim
+  "git@github.com:munich-quantum-toolkit/ddsim.git"
+  "1.24.0"
+  "v1.24.0"
+)
 
 # =====================================================================
 #  ZeroMQ stack (libzmq + cppzmq)
@@ -391,8 +472,8 @@ set(BUILD_MQT_CORE_MLIR OFF CACHE BOOL "" FORCE)
 find_or_fetch_package(
   mqt-ddsim
   "git@github.com:munich-quantum-toolkit/ddsim.git"
-  "2.2.0"
-  "v2.2.0"
+  "1.24.0"
+  "v1.24.0"
 )
 set(CMAKE_CXX_FLAGS "${_ORIG_CXX_FLAGS}" CACHE STRING "" FORCE)
 set(CMAKE_CXX_FLAGS_DEBUG "${_ORIG_CXX_FLAGS_DEBUG}" CACHE STRING "" FORCE)
