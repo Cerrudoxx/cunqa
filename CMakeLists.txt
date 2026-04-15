@@ -33,6 +33,16 @@ add_compile_options(-march=sandybridge -mtune=generic)
 add_link_options(${FLAGS_BLACKLIST})
 # =====================================================================
 
+
+# set(NATIVE_ARCH OFF CACHE BOOL "Force disable MQT native" FORCE)
+# set(DDSIM_NATIVE_ARCH OFF CACHE BOOL "Force disable DDSim native" FORCE)
+
+# set(LUSI_ARCH_BASE "-march=sandybridge -mtune=generic")
+
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LUSI_ARCH_BASE}" CACHE STRING "" FORCE)
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${LUSI_ARCH_BASE}" CACHE STRING "" FORCE)
+# # =====================================================================
+
 message(STATUS "Building CUNQA ${PROJECT_VERSION}")
 
 message(STATUS "CMAKE BUILD TYPE: ${CMAKE_BUILD_TYPE}")
@@ -538,7 +548,7 @@ find_or_fetch_package(
 
 
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/utils/logger" "${CMAKE_CURRENT_SOURCE_DIR}/src")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/utils/logger" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${JSON_INCLUDE_DIR}")
 #include_directories("${Python_INCLUDE_DIRS}" "${MPI_INCLUDE_PATH}")
 
 add_subdirectory(src)
