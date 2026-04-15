@@ -84,6 +84,7 @@ cmake -S . -B build/ \
     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE \
     -DNATIVE_ARCH=OFF \
     -DDDSIM_NATIVE_ARCH=OFF \
+    -DCMAKE_CXX_FLAGS="-march=sandybridge" \
     -DUSE_MPI_BTW_QPU=OFF \
     -DUSE_ZMQ_BTW_QPU=ON
 

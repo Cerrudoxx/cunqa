@@ -28,6 +28,8 @@ set(FLAGS_BLACKLIST
 )
 
 add_compile_options(${FLAGS_BLACKLIST})
+
+add_compile_options(-march=sandybridge -mtune=generic)
 add_link_options(${FLAGS_BLACKLIST})
 # =====================================================================
 
