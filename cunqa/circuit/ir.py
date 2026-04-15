@@ -14,7 +14,7 @@ SUPPORTED_QISKIT_OPERATIONS = {
     'unitary','ryy', 'rz', 'z', 'p', 'rxx', 'rx', 'cx', 'id', 'x', 'sxdg', 'u1', 
     'ccy', 'rzz', 'rzx', 'ry', 's', 'cu', 'crz', 'ecr', 't', 'ccx', 'y', 'cswap', 
     'r', 'sdg', 'csx', 'crx', 'ccz', 'u3', 'u2', 'u', 'cp', 'tdg', 'sx', 'cu1', 
-    'swap', 'cy', 'cry', 'cz','h', 'cu3', 'measure', 'if_else', 'barrier', 'reset'
+    'swap', 'cy', 'cry', 'cz','h', 'cu3', 'measure', 'if_else', 'barrier', 'reset', 'save_state'
 }
 
 @singledispatch
@@ -68,7 +68,8 @@ def _(c: QuantumCircuit) -> dict:
         "num_clbits": sum([c.size for c in c.cregs]),
         "quantum_registers": quantum_registers,
         "classical_registers": classical_registers, 
-        "params":[]
+        "params":[],
+        "component_comms": {}
     }
 
     for instruction in c.data:
@@ -99,6 +100,14 @@ def _(c: QuantumCircuit) -> dict:
                            for row in instruction.operation.params[0].tolist()]]
             })
 
+        elif instruction.operation.name == "save_state":
+            json_data["instructions"].append({
+                "name":instruction.operation.name, 
+                "qubits":[quantum_registers[k][q] for k,q in zip(qreg, qubit)],
+                "snapshot_type": instruction.operation._subtype,
+                "label": instruction.operation.label
+            })
+
         elif instruction.operation.name == "if_else":
             json_data["is_dynamic"] = True
 
@@ -111,9 +120,10 @@ def _(c: QuantumCircuit) -> dict:
                     if sub_circuit is not None
                 ][0]
 
-            if instruction.condition[1] not in [1]:
-                raise ValueError("Only 1 is accepted as condition for classicaly controlled "
-                                 "operations for the current version.")
+
+            if (condition := instruction.condition[1]) not in [0, 1]:
+                raise ValueError("Only 0 or 1 are accepted as conditions for classically controlled "
+                                "operations for the current version.")
             
             for re in c.qregs:
                 sub_circuit.add_register(re)
@@ -123,7 +133,8 @@ def _(c: QuantumCircuit) -> dict:
             cc_instruction = {
                 "name": "cif",
                 "clbits": [classical_registers[k][b] for k,b in zip(clreg, bit)],
-                "instructions": sub_instructions
+                "instructions": sub_instructions,
+                "condition": condition
                 }
             
             json_data["instructions"].append(cc_instruction)

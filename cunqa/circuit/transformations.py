@@ -98,7 +98,7 @@ def hsplit(circuit: CunqaCircuit, qubits_or_sections: Union[list[int], int]) -> 
                     ctrl_qubit = inst["qubits"][0] - initial_qubits[i]
                     target_qubit = inst["qubits"][1] - initial_qubits[j]
 
-                    with sub_circuit.expose(ctrl_qubit, target_circuit) as (rqubit, subcircuit):
+                    with sub_circuit.expose(ctrl_qubit, target_circuit) as ([rqubit], subcircuit):
                         inst["qubits"][0] = rqubit
                         inst["qubits"][1] = target_qubit
                         subcircuit.add_instructions([inst])
@@ -270,6 +270,16 @@ def union(circuits: list[CunqaCircuit]) -> CunqaCircuit:
             if consumed:
                 advance(idx)
 
+    # Store which of the circuit blocks have communications for exception in run method
+    blocks_with_comms = []
+    for circ in circuits:
+        if (circ.has_cc or circ.has_qc):
+            if len(circ.blocks_with_comms) !=0:
+                blocks_with_comms += circ.blocks_with_comms
+            else:
+                blocks_with_comms.append(circ.id)
+    union_circuit.blocks_with_comms = blocks_with_comms
+
     union_circuit.add_instructions(union_instructions)
     return union_circuit
 
@@ -311,6 +321,16 @@ def add(circuits: list[CunqaCircuit]) -> CunqaCircuit:
                     if circ_id in circuit_ids:
                         raise ValueError("Cannot add two circuits that communicate with eachother.")
             addition_instructions.append(instr)
+
+    # Store which of the circuit blocks have communications for exception in run method
+    blocks_with_comms = []
+    for circ in circuits:
+        if (circ.has_cc or circ.has_qc):
+            if len(circ.blocks_with_comms) !=0:
+                blocks_with_comms += circ.blocks_with_comms
+            else:
+                blocks_with_comms.append(circ.id)
+    addition_circuit.blocks_with_comms = blocks_with_comms
 
     addition_circuit.add_instructions(addition_instructions)
     return addition_circuit        

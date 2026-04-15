@@ -22,7 +22,7 @@ import re
 from typing import Union, Any, Optional, TypedDict
 from sympy import Symbol
 
-from sympy import Symbol
+from collections import Counter
 from qiskit import QuantumCircuit
 
 from cunqa.qclient import QClient
@@ -187,21 +187,20 @@ def run(
     else:
         circuits_ir = [to_ir(circuits)]
 
-    def expand_mapping(items: list[str]) -> dict[str, str]:
+    def expand_mapping(items: list[str], blocks_with_comms: list[str]) -> dict[str, str]:
         def split(item: str) -> list[str]:
             return [p for p in re.split(r"[|+]", item) if p]
 
-        singles = {item for item in items if len(split(item)) == 1}
+        occurrences = Counter()
+        # Count in how many of the items each circuit id appears
+        for item in items:
+            occurrences.update(set(split(item)))
 
-        conflicts = {
-            part
-            for item in items
-            if len(split(item)) > 1
-            for part in split(item)
-            if part in singles
-        }
+        conflicts      = {item for item, count in occurrences.items() if count >= 2}
+        conflict_comms = [circ_id for circ_id in blocks_with_comms if circ_id in conflicts]
 
-        if conflicts:
+        # Raise error if any conflict circuit has communications
+        if conflict_comms:
             raise ValueError(f"Conflicting identifiers found: {sorted(conflicts)}")
 
         return {
@@ -224,9 +223,15 @@ def run(
     elif len(circuits_ir) < len(qpus):
         logger.warning("More QPUs provided than the number of circuits. "
                        "Last QPUs will remain unused.")
+        
+    # Needed for union and add compatibility check
+    blocks_with_comms = []
+    for circ in circuits_ir:
+        if "blocks_with_comms" in circ:
+            blocks_with_comms += circ["blocks_with_comms"]
     
     # translate circuit ids in comm instruction to qpu endpoints
-    transformed_circs = expand_mapping([c["id"] for c in circuits_ir])
+    transformed_circs = expand_mapping([c["id"] for c in circuits_ir], blocks_with_comms)
     correspondence = {c["id"]: qpus[i].id for i, c in enumerate(circuits_ir)}
     for circuit in circuits_ir:
         for instr in circuit["instructions"]:
@@ -426,7 +431,6 @@ def qraise(n, t, *,
 
     cmd_getstate = ["squeue", "-h", "-j", job_id, "-o", "%T"]
     
-    i = 0
     while True:
         state = subprocess.run(
             cmd_getstate, 
@@ -444,10 +448,7 @@ def qraise(n, t, *,
             if count == n:
                 break
         # We do this to prevent an overload of the Slurm deamon 
-        if i == 500:
-            time.sleep(2)
-        else:
-            i += 1
+        time.sleep(1)
 
     # Wait for QPUs to be raised, so that get_QPUs can be executed inmediately
     print("QPUs ready to work \U00002705")
@@ -455,7 +456,7 @@ def qraise(n, t, *,
     return family if family is not None else str(job_id)
     
 
-def qdrop(*families: str):
+def qdrop(families: Union[str, list[str]] = [], remove_logs: bool = False):
     """
     Same functionality as the `qdrop` bash command, with the peculiarity that it only takes as 
     argument the vQPU family names (and it does not accept the job ID as the bash command). This is 
@@ -466,7 +467,9 @@ def qdrop(*families: str):
     Args:
         families (str): family names of the groups of vQPUs to be dropped.
     """
-    
+    if isinstance(families, str):
+        families = [families]
+
     # Building the terminal command to drop the specified families
     cmd = ['qdrop'] 
 
@@ -474,8 +477,12 @@ def qdrop(*families: str):
     if len( families ) == 0:
         cmd.append('--all') 
     else:
-        cmd.append('--fam')
-        for family in families:
-            cmd.append(family)
- 
+        family_str = f"--fam={families[0]}"
+        for family in families[1:]:
+            family_str += (',' + str(family))
+        cmd.append(family_str)
+
+    if remove_logs:
+        cmd.append('--rm')
+
     subprocess.run(cmd) #run 'qdrop slurm_jobid_1 slurm_jobid_2 etc' on terminal

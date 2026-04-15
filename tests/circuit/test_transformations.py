@@ -29,7 +29,7 @@ class FakeQuantumControlContext:
 
     def __enter__(self):
         self._subcircuit = FakeCircuit(self.target_circuit.num_qubits, self.target_circuit.num_clbits)
-        return -1, self._subcircuit
+        return [-1], self._subcircuit
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         rcontrol = {
@@ -51,6 +51,9 @@ class FakeCircuit:
         self.instructions = []
         self.is_dynamic = False
         self._expose_calls = []
+        self.components_comm = {}
+        self.has_cc = False
+        self.has_qc = False
 
     @property
     def info(self):
